@@ -1,0 +1,91 @@
+<!-- <!DOCTYPE html> -->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<!-- <link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/> -->
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootflat/css/site.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/index.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/jquery/jquery.dotdotdot.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/index.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		<%- include common/app_head1.html -%>
+		<%- include common/loginModal.html -%>
+		<div class="app-body" id="vm">
+			<div class="container">
+				<div class="left-contain">
+					<div class="part">
+						<div class="left-img">
+							<img src="<%=Host%>/img/index.jpg"/>
+						</div>
+						<div class="center-contain">
+							<div v-for="(item,index) in recommend_list">
+								<h4><a :href="baseUrl+'/page/article/'+item.article_id">{{item.name}}</a></h4>
+								<p class="recommend-describe">{{item.describe}}</p>
+							</div>
+						</div>
+					</div>
+					<div class="part">
+						<div class="panel recommend">
+							<div class="panel-heading">
+								<span>猜你喜欢</span>
+							</div>
+						    <div class="panel-body">
+						   		<p v-for="item in userLike"><a :href="baseUrl+'/page/article/'+item.id">{{item.name}}</a></p>
+						    </div>
+						</div>
+					</div>
+					<div class="part">
+						<div class="panel" v-for="item in category" v-bind:key="item.id">
+							<div class="panel-heading">
+								<span><a :href="baseUrl+'/page/category?category='+item.id">{{item.name}}</a></span>
+							</div>
+							<div class="panel-body img">
+								<img :src="item.img"/>
+								<p v-if="item.articles!=false"><i></i><a :href="item.articles[0].content_url">{{item.articles[0].name}}</a></p>
+						    </div>
+						    <div class="panel-body" v-for="(article,index) in item.articles">
+						   		<p v-if="index!=0"><i></i><a :href="article.content_url">{{article.name}}</a></p>
+						    </div>
+						</div>
+						
+					</div>
+				</div>
+				<!--right-->
+				<div class="right-contain">
+					<!--通知-->
+					<div class="panel news" v-if="news_list != ''">
+						<div class="panel-heading">
+							<span><a :href="baseUrl+'/page/news/list'">最新消息</a></span>
+						</div>
+					    <div class="panel-body">
+							<p v-for="(item,index) in news_list">
+								<a :href="baseUrl+'/page/news/'+item.id">{{item.name}}</a>
+								<span class="badge p-right badge-primary">{{item.create_time}}</span>
+							</p>
+					    </div>
+					</div>
+					<!--排名-->
+					<div class="panel" v-for="rank in arrangeRanks">
+						<div class="panel-heading">
+							<span>{{rank.title}}</span>
+						</div>
+					    <div class="panel-body">
+					   		<p v-for="(item,index) in rank.data"><b>{{index+1}}.</b><a :href="baseUrl+'/page/article/'+item.id">{{item.name}}</a></p>
+					    </div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+	</body>
+</html>

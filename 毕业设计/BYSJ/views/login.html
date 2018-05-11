@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.page{
+				margin-top: 10px;
+				padding: 10px;
+				min-height: 500px;
+			}
+			h4{
+				font-size: 16px;
+				margin: 0 0 30px 0;
+				padding: 10px;
+				font-weight: 700;
+				border-bottom: 1px solid #8dc61e;
+			}
+			form{
+				width: 250px;
+				margin: auto;
+				font-size: 16px;
+				margin-top: 100px;
+				line-height: 40px;
+			}
+			form *{
+				border-radius: 0 !important;
+			}
+			input[type="radio"]{
+				top: 8px;
+			}
+			.item{
+				position: relative;
+				height: auto;
+				margin: 10px 0;
+			}
+			.input{
+				height: 40px;
+			}
+			#submit{
+				width: 100%;
+				height: 40px;
+				font-size: 16px;
+   				font-family: '微软雅黑';
+			}
+			#error{
+				font-size: 12px;
+				line-height: 1;
+				color: red;
+				text-decoration: underline !important;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head2.html -%>
+		<div class="app-body" id="vm">
+			<div class="container page">
+				<h4>用户登录</h4>
+				<form action="">
+					<div class="item">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+							<input type="text" class="form-control input" placeholder="用户名/邮箱/笔名" v-model='account'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-eye-close"></span></span>
+							<input type="password" class="form-control input" placeholder="密码" v-model='pwd'>
+						</div>
+					</div>
+					<div class="item" style="margin-bottom: 5px;">
+						<button class="btn btn-default green-btn" id="submit" type="button" @click='login'>确认</button>
+					</div>
+					<div class="item" style="text-align: right;margin: 0;">
+						<a href="<%=Host%>/page/changePwd" id="error">忘记密码</a>
+					</div>
+				</form>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+	</body>
+	<script>
+		window.vm = new Vue({
+			el : "#vm",
+			data:{
+				account: '',
+				pwd: ''
+			},
+			methods:{
+				// 非空判断
+				notEmpty: function(value){
+					if(value == '' && /^\s*$/.test(value)) return false
+					return true
+				},
+				verifyAccount: function(){
+					var val = this.account
+					if(!this.notEmpty(val)){
+						fixedMsg({type:1,msg:'用户名不能为空'})
+						return false
+					}
+					return true
+				},
+				verifyPwd: function(){
+					var val = this.pwd1
+					if(!this.notEmpty(val)){
+						fixedMsg({type:1,msg:'密码不能为空'})
+						return false
+					}
+					return true
+				},
+				// 登录
+				login: function(){
+					if(!(this.verifyAccount() && this.verifyPwd())){
+						return false
+					}
+					$._ajax({
+						type: "get",
+						url: "/user/login",
+						data:{
+							account: this.account,
+							password: this.pwd
+						}
+					}).done(function(res){
+						if(res.status == 200){
+							var obj = getStorage()
+							obj.user = res.data
+							setStorage(obj)
+							var url = sessionStorage.lastPage
+							if(url) sessionStorage.removeItem('lastPage')
+							else url = baseUrl
+							location.href = url
+						} else{
+							fixedMsg({type:1,msg:res.msg})
+						}
+					}).fail(function(err){
+						fixedMsg({type:1,msg:err.responseJSON&&err.responseJSON.msg||'登录失败'})
+					})
+				}
+			}
+		})
+	</script>
+</html>

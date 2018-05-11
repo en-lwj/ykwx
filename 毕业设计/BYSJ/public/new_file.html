@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="Shortcut Icon" href="favicon.ico">
+		<title>邑刊文学</title>
+		<link rel="stylesheet" type="text/css" href="bootstrap-3.3.7-dist/css/bootstrap.min.css"/>
+		<style type="text/css">
+			#tp{
+			    background-size: 100% !important;
+			    display:inline-block;
+			    transform-origin:left top;
+			    position: absolute;
+			    width: 100%;
+			    height: 100%;
+			}
+		</style>
+		<script src="js/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/new_file.js" type="text/javascript" charset="utf-8"></script>
+		<script type="text/javascript">
+			//IE当中图片预览  
+			function dox1(file){
+				var reader=new FileReader();
+			      reader.readAsDataURL(file.files[0]);
+			      reader.onload=function(){
+			        var path=reader.result
+			        document.getElementById("tp").style.background = "url("+path+") no-repeat"
+			      };
+			}
+		    function dox(obj) {  
+		        obj.select();  
+		        obj.blur();  
+		        var image = document.getElementById("tp")
+		        var nfile = document.selection.createRange().text;  
+		        document.selection.empty();
+		        image.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(src='"+ nfile + "')";  
+	    	  	setTimeout(function(){
+		        	console.log(image.offsetWidth)
+		        	image.style.zoom = 100/image.offsetWidth
+		      	},100);
+		    }
+		    function haha(obj){
+		    	if('FileReader' in window){
+		    		dox1(obj)
+		    	}else{
+		    		dox(obj)
+		    	}
+		    }
+		</script>
+	</head>
+	<body>
+		<input type="file" id="upload" name="upload" onchange="haha(this)" />
+		<div style="width: 100px; height: 100px; overflow: hidden; z-index: 100;position: relative;">
+			<div id="tp" ></div>
+		</div>
+	</body>
+</html>

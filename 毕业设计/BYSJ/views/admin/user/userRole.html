@@ -1,0 +1,165 @@
+<link rel="stylesheet" href="<%=Host%>/css/admin/user/userRole.css">
+<div id="temp">
+    <div>
+        <div></div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>用户名</td>
+                    <td>账号</td>
+                    <td>邮箱</td>
+                    <td>手机号</td>
+                    <td>学号</td>
+                    <td>性别</td>
+                    <td>邑大学生</td>
+                    <td>权限</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item,index) in users' v-bind:key="item.id">
+                    <td>{{item.id}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.account}}</td>
+                    <td>{{item.email}}</td>
+                    <td>{{item.phone}}</td>
+                    <td>{{item.sno}}</td>
+                    <td>{{item.sex==1?'男':'女'}}</td>
+                    <td>{{item.student==1?'是':'否'}}</td>
+                    <td>{{admin[index]}}</td>
+                    <td>
+                        <button class="btn btn-primary btn-xs" @click="edit(index)">编辑</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title" id="myModalLabel">编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">id</label>
+                        <input type="text" class="form-control input-sm float-left" v-model="model_item.id" readonly style="width: 100px;">
+                    </div> 
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">用户名</label>
+                        <input type="text" class="form-control input-sm float-left" v-model="model_item.name" readonly style="width: 100px;">
+                    </div>
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">账号</label>
+                        <input type="text" class="form-control input-sm float-left" v-model="model_item.account" readonly style="width: 100px;">
+                    </div>
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">邮箱</label>
+                        <input type="text" class="form-control input-sm float-left" v-model="model_item.email" readonly style="width: 100px;">
+                    </div>
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">手机号</label>
+                        <input type="text" class="form-control input-sm float-left" v-model="model_item.phone" readonly style="width: 100px;">
+                    </div>
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">学号</label>
+                        <input type="text" class="form-control input-sm float-left" v-model="model_item.sno" readonly style="width: 100px;">
+                    </div>
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">性别</label>
+                        <input type="text" class="form-control input-sm float-left" :value="model_item.sex==1?'男':'女'" readonly style="width: 100px;">
+                    </div>
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">邑大学生</label>
+                        <input type="text" class="form-control input-sm float-left" :value="model_item.student==1?'是':'否'" readonly style="width: 100px;">
+                    </div>
+                    <div class="inline-block" style="min-width: 150px;">
+                        <label for="">权限</label>
+                        <select class="form-control input-sm float-left" style="min-width: 100px;width: auto;" v-model="model_item.admin">
+                            <option value="0">普通用户</option>
+                            <option value="10">编辑</option>
+                            <option value="100">管理员</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="changeUser()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script> 
+    var vm = new Vue({
+        el: '#temp',
+        data:　{
+            users: [],
+            model_item: {id:123},
+            select_index: null
+        },
+        created: function () {
+            this.getUsers()
+        },
+        computed: {
+            admin: function(){
+                var data = []
+                this.users.forEach(function(item) {
+                    switch(String(item.admin)){
+                        case '0': data.push('普通用户');break;
+                        case '10': data.push('编辑');break;
+                        case '100': data.push('管理员'); break;
+                        default: data.push('')
+                    } 
+                })
+                return data
+            }
+        },
+        methods: {
+            getUsers: function(){
+                var that = this
+                $._ajax({
+                    url: '/user/list'
+                }).done(function(res){
+                    that.users = res.data
+                })
+            },
+            edit: function(index){
+                this.select_index = index
+                this.model_item = cloneObj(this.users[index])
+                $('#edit').modal({
+                    backdrop: false,
+                    keyboard: false
+                })
+            },
+            changeUser: function(){
+                var index = this.select_index
+                var that = this
+                $('#edit').modal('hide')
+                $._ajax({
+                    type: 'put',
+                    url: '/user/role',
+                    data:{
+                        id: that.model_item.id,
+                        admin : that.model_item.admin
+                    }
+                }).done(function(res){
+                    if(res.status==200) {
+                        fixedMsg({type: 0, msg:'修改成功'})
+                        mergeObj(this.users[index], this.model_item)
+                    }
+                    else fixedMsg({type: 1, msg: res.msg})
+                })
+            }
+        }
+    })
+</script>

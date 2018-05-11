@@ -1,0 +1,347 @@
+<link rel="stylesheet" href="<%=Host%>/css/admin/activity/activityList.css">
+<div id="temp">
+    <div style="padding:　10px">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="">活动年份</label>
+                <select class="form-control input-sm" style="min-width: 100px;width: auto;" v-model="year">
+                    <option v-for="item in year_list" :key="item.year" :value="item.year">{{item.year}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary btn-sm" @click="queryActivityByYear()">查询活动</button>
+                <button class="btn btn-primary btn-sm" @click="addActivity()">添加活动</button>
+            </div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>活动类型</td>
+                    <td>活动名称</td>
+                    <td>创建时间</td>
+                    <td>开始时间</td>
+                    <td>结束时间</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item,index) in all_activity' :key="item.id">
+                    <td>{{item.id}}</td>
+                    <td>{{typeName[index]}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.create_time}}</td>
+                    <td>{{item.start_time}}</td>
+                    <td>{{item.end_time}}</td>
+                    <td>
+                        <button class="btn btn-primary btn-xs" @click="edit(index)">编辑</button>
+                        <button class="btn btn-primary btn-xs" @click="del(index)">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 添加活动模态框（Modal） -->
+    <div class="modal fade" id="addModal" tabindex="0" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"  aria-hidden="true">×</button>
+                    <h4 class="modal-title">编辑</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="clear">
+                        <label for="">活动名称</label>
+                        <div class="label-block">
+                            <input type="text" class="form-control input-sm" v-model="add_modal_item.name">
+                        </div>
+                    </div> 
+                    <div class="clear">
+                        <label for="">活动类型</label>
+                        <div class="label-block">
+                            <select class="form-control input-sm" style="min-width: 100px;width: auto;" v-model="add_modal_item.activity_column_id">
+                                <option value="">请选择</option>
+                                <option v-for="item in activity_column" :key="item.id" :value="item.id">{{item.name}}</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="clear">
+                        <label for="">开始时间</label>
+                        <div class="label-block">
+                            <input @change="console.log('123')" type="text" class="form-control input-sm" v-model="add_modal_item.start_time" id="start_time">
+                        </div>
+                    </div>
+                    <div class="clear">
+                        <label for="">结束时间</label>
+                        <div class="label-block">
+                            <input type="text" class="form-control input-sm" v-model="add_modal_item.end_time" id="end_time">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="addSure()">确认添加</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- 编辑活动模态框（Modal） -->
+     <div class="modal fade" id="editModal" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"  aria-hidden="true">×</button>
+                        <h4 class="modal-title">编辑</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="clear">
+                            <label for="">活动名称</label>
+                            <div class="label-block">
+                                <input type="text" class="form-control input-sm" v-model="edit_modal_item.name">
+                            </div>
+                        </div> 
+                        <div class="clear">
+                            <label for="">活动类型</label>
+                            <div class="label-block">
+                                <select class="form-control input-sm" style="min-width: 100px;width: auto;" v-model="edit_modal_item.activity_column_id">
+                                    <option value="">请选择</option>
+                                    <option v-for="item in activity_column" :key="item.id" :value="item.id">{{item.name}}</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="clear">
+                            <label for="">开始时间</label>
+                            <div class="label-block">
+                                <input type="text" class="form-control input-sm" v-model="edit_modal_item.start_time" id="start_time2">
+                            </div>
+                        </div>
+                        <div class="clear">
+                            <label for="">结束时间</label>
+                            <div class="label-block">
+                                <input type="text" class="form-control input-sm" v-model="edit_modal_item.end_time" id="end_time2">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" @click="editSure()">提交更改</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">删除</h4>
+                </div>
+                <div class="modal-body">
+                    你确定删除吗？
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="delSure()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script> 
+    var vm = new Vue({
+        el: '#temp',
+        data:　{
+            // 根据年份获取的活动列表
+            all_activity: [],
+            // 活动类别列表
+            activity_column: [],
+            select_index: null,
+            // 当前活动的年份
+            year: '',
+            year_list: [],
+            add_modal_item: {
+                name: '',
+                activity_column_id: '',
+                start_time: '',
+                end_time: ''
+            },
+            edit_modal_item: {
+                name: '',
+                activity_column_id: '',
+                start_time: '',
+                end_time: ''
+            },
+        },
+        created: function () {
+            this.getActivityColumn()
+            this.getYearList()
+        },
+        mounted: function () {
+            this.setTimer()
+        },
+        computed: {
+            typeName: function(){
+                var data = []
+                var that = this
+                this.all_activity.forEach(function(item,index) {
+                    var column_id = item.activity_column_id
+                    for(var i = 0; i<that.activity_column.length; i++){
+                        if(that.activity_column[i].id == column_id){
+                            data.push(that.activity_column[i].name)
+                        } else {
+
+                        }
+                    }
+                    if(data.length==index) data.push('')
+                })
+                return data
+            }
+        },
+        methods: {
+            // 获取年份列表
+            getYearList: function(){
+                var that = this
+                $._ajax({
+                    url: '/activity/year'
+                }).done(function(res){
+                    that.year_list = res.data
+                    that.year = res.data[0].year
+                    that.queryActivityByYear()
+                })
+            },
+            // 根据年份查询活动列表
+            queryActivityByYear: function(){
+                var that = this
+                $._ajax({
+                    url: '/activity/year/'+that.year
+                }).done(function(res){
+                    that.all_activity = res.data
+                })
+            },
+            // 获取活动列表类型
+            getActivityColumn: function(){
+                var that = this
+                $._ajax({
+                    url: '/activity/column'
+                }).done(function(res){
+                    that.activity_column = res.data
+                })
+            },
+            // 添加活动弹出框
+            addActivity: function(){
+                $('#addModal').modal({
+                    backdrop: false,
+                    keyboard: false
+                })
+            },
+            edit: function(index){
+                this.select_index = index
+                this.edit_modal_item = cloneObj(this.all_activity[index])
+                $('#editModal').modal({
+                    backdrop: false
+                })
+            },
+            del: function(index){
+                this.select_index = index
+                $('#delModal').modal({
+                    backdrop: false
+                })
+            },
+            // 确认添加活动
+            addSure: function(){
+                var that = this
+                $._ajax({
+                    type: 'post',
+                    url: '/activity',
+                    data: this.add_modal_item
+                }).done(function(res){
+                    if(res.status==200) {
+                        that.queryActivityByYear()
+                        $('#addModal').modal('hide')
+                    }
+                    else fixedMsg({type: 1, msg:'添加活动失败'})
+                })
+            },
+            // 确认编辑修改活动
+            editSure: function(){
+                var index = this.select_index
+                var that = this
+                $._ajax({
+                    type: 'put',
+                    url: '/activity/'+ this.all_activity[index].id,
+                    data: this.edit_modal_item
+                }).done(function(res){
+                    if(res.status==200){
+                        mergeObj(that.all_activity[index], that.edit_modal_item)
+                        $('#editModal').modal('hide')
+                        fixedMsg({type: 0, msg:'修改成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'修改失败'})
+                })
+            },
+            // 确认删除
+            delSure: function(){
+                var that = this
+                var index = this.select_index
+                $._ajax({
+                    type: 'delete',
+                    url: '/activity/'+ this.all_activity[index].id
+                }).done(function(res){
+                    if(res.status==200){
+                        that.queryActivityByYear()
+                        $('#delModal').modal('hide')
+                    }
+                    else fixedMsg({type: 1, msg:'删除失败'})
+                })
+            },
+            setTimer: function(){
+                var that = this
+                laydate.render({
+                    elem: '#start_time',
+                    type: 'datetime',
+                    format: 'yyyy-MM-dd HH:mm:ss',
+                    festival: true,
+                    done: function (datas) { 
+                        that.add_modal_item.start_time = datas;
+                    }
+                }) 
+                laydate.render({
+                    elem: '#end_time',
+                    type: 'datetime',
+                    format: 'yyyy-MM-dd HH:mm:ss',
+                    festival: true,
+                    done: function (datas) { 
+                        that.add_modal_item.end_time = datas;
+                    }
+                })  
+                laydate.render({
+                    elem: '#start_time2',
+                    type: 'datetime',
+                    format: 'yyyy-MM-dd HH:mm:ss',
+                    festival: true,
+                    done: function (datas) { 
+                        that.edit_modal_item.start_time = datas;
+                    }
+                })  
+                laydate.render({
+                    elem: '#end_time2',
+                    type: 'datetime',
+                    format: 'yyyy-MM-dd HH:mm:ss',
+                    festival: true,
+                    done: function (datas) { 
+                        that.edit_modal_item.start_time = datas;
+                    }
+                })   
+            }
+        }
+    })
+</script>

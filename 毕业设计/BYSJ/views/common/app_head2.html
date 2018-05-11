@@ -1,0 +1,99 @@
+<!-- app-head2 -->
+<div class="app-head2" id="head">
+	<div class="container">
+		<div class="app-head2-left">
+			<a href="<%=Host%>">
+				<img class="logo" src="<%=Host%>/img/web_icon.png"/>
+			</a>
+		</div>
+		<div class="app-head2-right" style="display:none" v-show="userInfo != null">
+			<div class="right-item">
+				<div class="dropdown" style="display: inline-block;height: 100%;">
+					<button class="user-down" id="dropdownMenu1" data-toggle="dropdown">
+						<img :src="userInfo&&userInfo.img?userInfo.img:'<%=Host%>/img/user.png'" alt="头像" class="user-img">
+						<p class="user-name">{{userInfo?userInfo.name:''}}</p>
+						<span class="caret"></span>
+					</button>
+					<ul class="dropdown-menu" aria-labelledby="dropdownMenu1" style="min-width: 120px">
+						<li>
+							<a href="<%=Host%>/page/userPersonal">个人中心</a>
+						</li>
+						<li v-show="userInfo&&userInfo.admin > 0">
+                            <a href="<%=Host%>/page/admin">后台管理</a>
+                        </li>
+						<li role="separator" class="divider"></li>
+						<li>
+							<a href="javascript:;" @click='logout'>注销</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="app-head2-right" style="display:none" v-show="userInfo == null">
+			<div class="right-item">
+				<a class="btn-green" href="javascript:;" @click="showloginModal()">登录</a>
+			</div>
+			<div class="right-item">
+				<a class="btn-green" href="<%=Host%>/page/register">注册</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	var vm_head = new Vue({
+		el: '#head',
+		data: {
+			ykwx: getStorage(),
+			userInfo: getStorage().user? getStorage().user: null,
+		},
+		methods: {
+			logout: function(){
+				if(this.ykwx.user) delete this.ykwx.user
+				setStorage(this.ykwx)
+				this.userInfo = null
+				$._ajax({
+                    type:"get",
+                    url:"/user/logout"
+                }).done(function(res){
+                    if(res.status != 200){
+                        fixedMsg({type:1,msg:res.msg})
+                    }
+                })
+			},
+			showloginModal: function(){
+				if($("#loginModal").length == 0){
+					location.href = baseUrl+'/page/login'
+					return
+				}
+				$("#loginModal").modal({
+					keyboard: false
+				})
+			},
+			userLogin: function(){
+				if($('#user_account').val() == "" && $('#user_password').val() == ""){
+					showWarningMsg('#loginModal .modal-body','用户名或密码不能为空！')
+					return
+				}
+				var that = this
+				$._ajax({
+					type:"get",
+					url:"/user/login",
+					data:{
+						account: $('#user_account').val(),
+						password: $('#user_password').val()
+					}
+				}).done(function(res){
+					if(res.status != 200){
+						showWarningMsg('#loginModal .modal-body',res.msg)
+					}else{
+						$("#loginModal").modal('hide')
+						that.userInfo = res.data
+						that.ykwx.user = res.data
+						setStorage(that.ykwx)
+					}
+				})
+			}
+		}
+	})
+</script>

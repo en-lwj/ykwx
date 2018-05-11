@@ -1,0 +1,40 @@
+.pagination>li {
+    display: inline-block;
+    vertical-align: middle;
+    height: 30px;
+    overflow: hidden;
+}
+.pagination>li>a, .pagination>li>span{
+    height: 100%;
+}
+.page{
+    white-space: nowrap;	
+    padding: 0 15px;
+    text-align: right;
+}
+.page-input{
+    padding: 0 10px;	
+}
+.page-input input{
+    height: 30px;
+    border: 1px solid #ddd;
+    margin: 0 5px;
+    padding: 0 5px;
+    width: 50px;
+}
+.page .btn{
+    padding: 0 12px;
+    height: 30px;
+    line-height: 30px;
+    border-radius: 0;
+}
+
+.pagination>.disabled>a, .pagination>.disabled>a:focus, .pagination>.disabled>a:hover, .pagination>.disabled>span, .pagination>.disabled>span:focus, .pagination>.disabled>span:hover{
+    color: #777;
+}
+
+.pagination>li>a:focus, .pagination>li>span:focus {
+    color: #434A54;
+    background-color: #FFF;
+    border-color: #CCD1D9;
+}

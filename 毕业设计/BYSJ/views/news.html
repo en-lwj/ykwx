@@ -1,0 +1,362 @@
+<!-- <!DOCTYPE html> -->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<!-- <link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/> -->
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootflat/css/site.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.left-contain{
+				float: left;
+				width: 660px;
+			}
+			.right-contain{
+				float: right;
+				width: 300px;
+			}
+			.recommend{
+				margin: 15px 30px 0;
+				border: 1px solid #eee;
+				background-color: #f9f9f9;
+				padding: 10px 25px;
+			}
+			.recommend>span{
+				font-weight: 700;
+    			padding-right: 10px;
+			}
+			/* 文章 */
+			.news-head{
+				color: #222;
+				text-align: center;
+			}
+			.news-head h4{
+				font-weight: 700;
+				font-size: 18px;
+				padding: 10px;
+				color: #000;
+			}
+			.news-head .item{
+				display: inline-block;
+				padding: 3px 10px;
+				border: 1px solid #eee;
+				background-color: #f2f2f2;
+			}
+			.news-title{
+				text-align: center;
+			}
+			.content{
+				padding: 20px 30px;
+				color: #222;
+				line-height: 1.8;
+				letter-spacing: 0.3;
+				font-family: sans-serif,'Microsoft Yahei'; 
+			}
+			.content p{
+				text-indent: 2em;
+			}
+			/* 评论 */
+			.text-right{
+				text-align: right
+			}
+			h4{
+				font-weight: 700;
+				color: #666;
+			}
+			.label-left{
+				width: 50px;
+			}
+			.label-block{
+				margin-left: 50px;
+				padding-left: 10px;
+			}
+			.label-item .user-img{
+				width: 100%;
+				height: auto;
+				display: inline-block;
+			}
+			.absolute-right{
+				position: absolute;
+				right: 10px;
+				top: 0;
+			}
+			.absolute-right span{
+				cursor: pointer;
+			}
+			.border-left{
+				border-width: 2px;
+			}
+			.color-888{
+				color: #888;
+			}
+			.color-blue{
+				color: #2196f3;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head1.html -%>
+		<div class="app-body">
+			<div class="container">
+				<div class="left-contain" id="vm">
+					<div class="part" v-if="news != ''">
+						<div class="news-head">
+							<h4 class="news-title">{{news.name}}</h4>
+							<span class="item">时间：{{news.create_time}}</span>
+							<span class="item">发布者：{{news.author}}</span>
+							<span class="item">阅读：{{news.all_click}}次</span>
+						</div>
+						<div class="content" v-html="news.content"></div>
+						<!-- 网友点评 -->
+						<div class="border-top padding-lg">
+							<h4>网友点评</h4>
+							<textarea class="form-control" rows="5" maxlength="150" v-model="comment"></textarea>
+							<div class="text-right padding-top-sm">
+								<input type="button" class="btn btn-success" value="点评" @click="addComment()">
+							</div>
+						</div>
+						<!-- 所有评论 -->
+						<div class="border-top padding-lg">
+							<h4>热门评论</h4>
+							<div class="padding-top-md label-item border-bottom" v-clock v-for="(item,index) in comment_list" :data-comment-id="item.id">
+								<div class="label-left">
+									<img :src="item.user.img||'<%=Host%>/img/user.png'" class="user-img" alt="">
+								</div>
+								<div class="label-block padding-bottom-md">
+									<div class="relative">
+										<span class="color-green" style="padding-right: 10px;">{{item.user.name}}</span>
+										<span class="font-xs">{{item.create_time}}</span>
+										<div class="absolute-right">
+											<span class="color-green margin-right-sm show-reply" @click="showReply($event)" v-show="news.user_id==(getStorage().user&&getStorage().user.id)||false">回复</span>
+											<span @click="addPraise(item.id,index)" :data-zan="item.id" :class="item.id | hadPraise" >
+												<i class="glyphicon glyphicon-thumbs-up"></i>
+												<span>({{item.like_num}})</span>
+											</span>
+										</div>
+									</div>
+									<div class="padding-top-sm padding-bottom-sm">
+										{{item.content}}
+									</div>
+									<div class="padding-top-sm border-top padding-bottom-sm" v-show="item.reply != []" v-for="reply in item.reply">
+										<div class="border-left border-green padding-left-xs">作者回复</div>
+										<div class="padding-top-sm">{{reply.content}}</div>
+									</div>
+									<div class="padding-top-sm border-top reply" style="display: none">
+										<textarea class="form-control" rows="3" maxlength="150" placeholder="回复内容..." :id="'reply_input_'+item.id"></textarea>
+										<div class="text-right padding-top-sm">
+											<input type="button" class="btn btn-success" value="点评" @click="toReply(item.id,index)">
+										</div>
+									</div>
+								</div>
+							</div>
+							<!-- 加载更多 -->
+							<div class="padding-top-sm center">
+								<button type="button" class="btn btn-default" @click="getComment()" v-show="comment_page_show">加载更多评论...</button>
+								<span class="color-888" v-show="!comment_page_show">评论都被你看完啦...</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<!--right-->
+				<%- include common/side_right.html -%>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+		<script>
+			window.vm = new Vue({
+				el : "#vm",
+				data:{
+					news:'',
+					news_id: 0,
+					comment: '',
+					comment_list: [],
+					comment_page: 1,
+					comment_page_show: true,
+					praise_list: [],
+					// 文章 0， 消息 1
+					type: 1
+				},
+				created: function(){
+					this.news_id = this.getNewsId()
+					this.getNews()
+					this.getRecommend()
+					this.getPraise(this.news_id)
+					this.getComment()
+				},
+				filters: {
+					hadPraise: function(val){
+						if(vm.praise_list.indexOf(val) != -1){
+							return 'color-blue'
+						}
+						return ''
+					}
+				},
+				methods:{
+					//获取文章Id
+					getNewsId: function(){
+						var news_id = location.pathname.match(/\/\d+/g)
+						return news_id== null? 0 : news_id[0].slice(1)
+					},
+					// 获取信息
+					getNews: function(){
+						if(this.news_id == 0) return
+						$._ajax({
+							type: "get",
+							url: "/news/"+this.news_id
+						}).done(function(res){
+							if(res.status == 200){
+								vm.news = res.data
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 获取推荐语
+					getRecommend: function(id){
+						var that = this
+						$._ajax({
+							type: "get",
+							url: "/recommend/list/"+this.news_id
+						}).done(function(res){
+							if(res.status == 200){
+								that.recommend = res.data
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 评论
+					addComment: function(){
+						var that = this
+						if(that.comment == ''){
+							fixedMsg({type:2,msg:'你的评论空空如也，先写点东西吧'})
+							return
+						}
+						$._ajax({
+							type: "post",
+							url: "/comment",
+							data:{
+								type: that.type,
+								type_id : that.news_id,
+								content: that.comment
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								fixedMsg({type:0,msg:'发表评论成功'})
+								that.comment = ''
+								that.getComment(1)
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 获取评论
+					getComment: function(page){
+						var that = this
+						var limit = 10
+						$._ajax({
+							type: "get",
+							url: "/comment",
+							data:{
+								type : that.type, 
+								type_id : that.news_id,
+								page: page||that.comment_page,
+								limit: limit
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								if(res.data.length<limit || res.data.length == 0){
+									that.comment_page_show = false
+								}
+								if(page) that.comment_list = res.data
+								else{
+									that.comment_list = that.comment_list.concat(res.data)
+									that.comment_page ++
+								}
+								
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 显示回复评论框
+					showReply: function(e){
+						$(e.target).parents('.label-item').find('.reply').slideToggle()
+					},
+					// 作者回复
+					toReply: function(comment_id,index){
+						var $content = $("#reply_input_"+comment_id)
+						var that = this
+						$._ajax({
+							type: "post",
+							url: "/comment/"+comment_id,
+							data:{
+								type : that.type,
+								type_id: that.news_id,
+								content: $content.val()
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								fixedMsg({type:0,msg:'回复成功'})
+								that.comment_list[index].reply.push({content: $content.val()})
+								$content.val('')
+								$('[data-comment-id='+comment_id+']').find('.show-reply').parents('.label-item').find('.reply').hide()
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 点赞
+					addPraise: function(comment_id,index){
+						var $zan = $('[data-zan='+comment_id+']')
+						if($zan.hasClass('color-blue')) return
+						var that = this
+						$._ajax({
+							type: "post",
+							url: "/praise/"+comment_id,
+							data: {
+								type: that.type,
+								type_id : that.news_id
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								$zan.addClass('color-blue')
+								that.comment_list[index].like_num ++
+								that.praise_list.push(comment_id)
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 获取用户点赞列表
+					getPraise: function(news_id){
+						var that = this
+						$._ajax({
+							type: "get",
+							async: false,
+							url: "/praise/"+news_id,
+							data:{
+								type: that.type
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								res.data.forEach(function(item){
+									that.praise_list.push(item.comment_id)
+								})
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

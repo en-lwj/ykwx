@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="renderer" content="webkit">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>邑刊文学</title>
+	<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootflat/css/site.min.css" />
+	<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/ueditor-1.4.3.3/themes/default/_css/editor.css"/>
+	<link rel="dns-prefetch" href="http://fonts.googleapis.com" />
+	<link href="http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,800,700,400italic,600italic,700italic,800italic,300italic"
+	 rel="stylesheet" type="text/css">
+	<link rel="stylesheet" type="text/css" href="<%=Host%>/css/pager.css"/>
+	<link rel="stylesheet" type="text/css" href="<%=Host%>/css/admin/common.css"/>
+	
+	<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="<%=Host%>/plugs/bootflat/js/site.min.js" type="text/javascript" charset="utf-8"></script>
+	
+	<!-- 日期时间选择器 -->
+	<script type="text/javascript" src="<%=Host%>/plugs/laydate/laydate.js"></script>
+	<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+	<script src="<%=Host%>/plugs/ueditor-1.4.3.3/ueditor.config.js" type="text/javascript" charset="utf-8"></script>
+	<script src="<%=Host%>/plugs/ueditor-1.4.3.3/_examples/editor_api.js" type="text/javascript" charset="utf-8"></script>
+</head>
+<style>
+	/*UEeditor*/
+	.edui-default .edui-editor-toolbarbox{
+		box-shadow: none !important;
+	}
+	.edui-default .edui-editor-toolbarboxouter{
+		background-image: none !important;
+		box-shadow: none !important;
+	}
+
+	.edui-default .edui-editor-toolbarboxinner{
+		background-image: none;
+		box-shadow: none !important;
+	}
+	.edui-editor-iframeholder .edui-default>iframe{
+		overflow: auto;
+	}
+	tr.edui-default>td{
+		border: none !important;
+	}
+
+
+
+	html{
+		height: 100%;
+		overflow-x: hidden;
+	}
+	body {
+		min-height: 100%;
+		background: #eee;
+	}
+
+	.navbar>.container-fluid .navbar-brand {
+		width: auto;
+	}
+
+	.list-group li>.list-group-item:first-child {
+		border: none;
+	}
+
+	.list-group li {
+		border-bottom: 1px solid #eee;
+	}
+
+	.sidebar-offcanvas .collapse.in a,
+	.sidebar-offcanvas .collapsing a {
+		padding-left: 30px;
+	}
+
+	.toggle-sidebar span {
+		font-size: 18px;
+		padding-right: 10px;
+		margin: 0;
+	}
+
+	.table thead td {
+		background-color: #f2f2f2;
+	}
+
+	.table-bordered>thead>tr>td,
+	.table-bordered>thead>tr>th {
+		border-bottom-width: 1px;
+	}
+
+	.inline-block {
+		display: inline-block;
+		width: auto;
+		clear: both;
+	}
+
+	.inline-block label {
+		line-height: 30px;
+		display: block;
+		height: 30px;
+		float: left;
+		padding: 0 10px;
+		min-width: 80px;
+		text-align: right;
+	}
+
+	.float-left {
+		float: left;
+		display: block;
+	}
+
+	.clear {
+		clear: both;
+	}
+
+	.label-block {
+		margin-left: 100px;
+	}
+
+	.label-inline {
+		display: inline-block;
+		vertical-align: middle;
+	}
+</style>
+
+<body>
+	<!--nav-->
+	<nav role="navigation" class="navbar navbar-custom">
+		<div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+				<button data-target="#bs-content-row-navbar-collapse-5" data-toggle="collapse" class="navbar-toggle" type="button">
+					<span class="sr-only">邑刊文学后台管理系统</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a href="#" class="navbar-brand">邑刊文学后台管理系统</a>
+				<div class="navbar-collapse collapse" role="navigation" style="display:inline-block !important">
+					<ul class="nav navbar-nav">
+						<li>
+							<a href="<%=Host%>">首页</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div id="bs-content-row-navbar-collapse-5" class="collapse navbar-collapse">
+				<ul class="nav navbar-nav navbar-right">
+					<li class="dropdown">
+						<a data-toggle="dropdown" class="dropdown-toggle" href="#">
+							<span class="user-name"></span>
+							<b class="caret"></b>
+						</a>
+						<ul role="menu" class="dropdown-menu">
+							<li>
+								<a href="javascript:;" onclick="logout()">退出</a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+
+			</div>
+			<!-- /.navbar-collapse -->
+		</div>
+		<!-- /.container-fluid -->
+	</nav>
+	<!--header-->
+	<div class="container-fluid">
+		<!--documents-->
+		<div class="row row-offcanvas row-offcanvas-left">
+			<div class="col-xs-6 col-sm-3 sidebar-offcanvas" role="navigation">
+				<ul class="list-group panel">
+					<li>
+						<a href="#a1" class="list-group-item " data-toggle="collapse">
+							<i class="glyphicon glyphicon-user"></i>用户管理
+							<span class="glyphicon glyphicon-chevron-right"></span>
+						</a>
+						<div class="collapse in" id="a1">
+							<a href="#userRole" data-page="userRole" class="list-group-item">用户权限</a>
+						</div>
+					</li>
+					<!-- <li>
+						<a href="#a2" class="list-group-item " data-toggle="collapse">
+							<i class="glyphicon glyphicon-send"></i>消息广播
+							<span class="glyphicon glyphicon-chevron-right"></span>
+						</a>
+						<div class="collapse in" id="a2">
+							<a href="#userMsg" data-page="userMsg" class="list-group-item">单一用户通知</a>
+							<a href="#allUserMag" data-page="allUserMag" class="list-group-item">集体广播通知</a>
+						</div>
+					</li> -->
+					<li>
+						<a href="#a3" class="list-group-item " data-toggle="collapse">
+							<i class="glyphicon glyphicon-list-alt"></i>稿件管理
+							<span class="glyphicon glyphicon-chevron-right"></span>
+						</a>
+						<div class="collapse in" id="a3">
+							<a href="#articleList" data-page="articleList" class="list-group-item">用户文章</a>
+							<a href="#recommendList" data-page="recommendList" class="list-group-item">文章推荐</a>
+							<a href="#checkCategoryArticle" data-page="checkCategoryArticle" class="list-group-item">日常稿件审核</a>
+							<a href="#checkActivityArticle" data-page="checkActivityArticle" class="list-group-item">活动稿件审核</a>
+							<a href="#adminArticlePrize" data-page="adminArticlePrize" class="list-group-item">活动奖项评选</a>
+						</div>
+					</li>
+					<li>
+						<a href="#a4" class="list-group-item " data-toggle="collapse">
+							<i class="glyphicon glyphicon-equalizer"></i>活动管理
+							<span class="glyphicon glyphicon-chevron-right"></span>
+						</a>
+						<div class="collapse in" id="a4">
+							<a href="#activityList" data-page="activityList" class="list-group-item">活动列表</a>
+						</div>
+					</li>
+					<li>
+						<a href="#a5" class="list-group-item " data-toggle="collapse">
+							<i class="glyphicon glyphicon glyphicon-bell"></i>信息通知
+							<span class="glyphicon glyphicon-chevron-right"></span>
+						</a>
+						<div class="collapse in" id="a5">
+							<a href="#addNews" data-page="addNews" class="list-group-item">添加信息</a>							
+							<a href="#newsList" data-page="newsList" class="list-group-item">信息公告</a>
+						</div>
+					</li>
+				</ul>
+			</div>
+			<div class="col-xs-12 col-sm-9 content">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							<a href="javascript:void(0);" class="toggle-sidebar">
+								<span class="fa fa-angle-double-left" data-toggle="offcanvas" title="Maximize Panel"></span>
+							</a>
+							<span id="panel-title"></span>
+						</h3>
+					</div>
+					<div class="panel-body" id="page-content">
+
+					</div>
+					<!-- panel body -->
+				</div>
+			</div>
+			<!-- content -->
+		</div>
+	</div>
+</body>
+<script>
+	sessionStorage.lastPage = location.href
+	$('.user-name').html(getStorage().user && getStorage().user.name || '123')
+	var hash = location.hash
+	$('[data-page]').click(function () {
+		// 页面
+		if (hash == location.hash) {
+			window.onhashchange()
+		} else {
+			hash = location.hash
+		}
+	})
+	window.onhashchange = function () {
+		if (location.hash == "") {
+			$('#panel-title').text('')
+			$('#page-content').html('')
+			return
+		}
+		var url = '/page/admin/' + location.hash.substr(1)
+		$('#panel-title').text($('[data-page=' + location.hash.substr(1) + ']').text())
+		$._ajax({
+			url: url
+		}).done(function (res) {
+			$('#page-content').html(res)
+		})
+	}
+	onhashchange()
+</script>
+
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.page{
+				margin-top: 10px;
+				padding: 10px;
+				min-height: 500px;
+			}
+			h4{
+				font-size: 16px;
+				margin: 0 0 30px 0;
+				padding: 10px;
+				font-weight: 700;
+				border-bottom: 1px solid #8dc61e;
+			}
+			form{
+				width: 250px;
+				margin: auto;
+				font-size: 16px;
+				margin-top: 100px;
+				line-height: 40px;
+			}
+			form *{
+				border-radius: 0 !important;
+			}
+			input[type="radio"]{
+				top: 8px;
+			}
+			.item{
+				position: relative;
+				height: auto;
+				margin: 10px 0;
+			}
+			.input{
+				height: 40px;
+			}
+			.input:hover{
+				color: inherit !important;
+			}
+			#submit{
+				width: 100%;
+				height: 40px;
+				font-size: 16px;
+   				font-family: '微软雅黑';
+			}
+			#error{
+				font-size: 12px;
+				line-height: 1;
+				color: red;
+				text-decoration: underline !important;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head2.html -%>
+		<div class="app-body" id="vm">
+			<div class="container page">
+				<h4>修改密码</h4>
+				<form action="">
+					<div class="item">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-user"></span></span>
+							<input type="text" class="form-control input" placeholder="邮箱" v-model='email'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-envelope"></span></span>
+							<input type="text" class="form-control input" placeholder="邮箱验证" v-model='code'>
+							<span class="input-group-btn">
+								<button class="btn btn-default input" style="width: 96px;" type="button" @click='getCode' :disabled='ifSendCode'>{{code_text}}</button>
+							</span>
+						</div>
+					</div>
+					<div class="item">
+						<div class="input-group">
+							<span class="input-group-addon"><span class="glyphicon glyphicon-eye-close"></span></span>
+							<input type="password" class="form-control input" placeholder="重设密码" v-model='pwd'>
+						</div>
+					</div>
+					<div class="item" style="margin-bottom: 5px;">
+						<button class="btn btn-default green-btn" id="submit" type="button" @click='changePwd'>确认</button>
+					</div>
+				</form>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+	</body>
+	<script>
+		window.vm = new Vue({
+			el : "#vm",
+			data:{
+				email: '',
+				code: '',
+				pwd: '',
+				code_text: '发送验证码'
+			},
+			computed: {
+				ifSendCode: function(){
+					if(this.code_text=='发送验证码') return false
+					return true
+				}	
+			},
+			methods:{
+				// 非空判断
+				notEmpty: function(value){
+					if(value == '' && /^\s*$/.test(value)) return false
+					return true
+				},
+				verifyEmail: function(){
+					var val = this.email
+					if(!this.notEmpty(val)){
+						fixedMsg({type:1,msg:'邮箱不能为空'})
+						return false
+					}
+					if(!/^\w*@\w+\.\w+$/.test(val)){
+						fixedMsg({type:1,msg:'邮箱格式不正确'})
+						return false
+					}
+					if(this.getExist('email',val)){
+						fixedMsg({type:1,msg:'该邮箱还没注册过邑刊文学账号'})
+						return false
+					}
+					return true
+				},
+				verifyCode: function(){
+					var val = this.code
+					if(!this.notEmpty(val)){
+						fixedMsg({type:1,msg:'验证码不能为空'})
+						return false
+					}
+					return true
+				},
+				verifyPwd: function(){
+					var val = this.pwd
+					if(!this.notEmpty(val)){
+						fixedMsg({type:1,msg:'新密码不能为空'})
+						return false
+					}
+					return true
+				},
+				// 判断字段值是否已存在
+				getExist: function(filed,value){
+					var return_val = false
+					$._ajax({
+						type: "get",
+						url: "/user/exist",
+						async: false,
+						data:{
+							filed: filed,
+							value: value
+						}
+					}).done(function(res){
+						if(res.status == 200) return_val=true
+					})
+					return return_val
+				},
+				// 获取验证码
+				getCode: function(){
+					var email = this.email
+					if(!this.verifyEmail()) return
+					$._ajax({
+						type: "get",
+						url: "/user/code",
+						data:{
+							email: email,
+						}
+					}).done(function(res){
+						if(res.status != 200){
+							fixedMsg({type:1,msg:res.data})
+						}else{
+							var i = 60
+							var setCodeText = function(){
+								if(i == 0){
+									vm.code_text = '发送验证码'
+									return clearInterval(time)
+								}
+								vm.code_text = '已发送('+i+')'
+								i--
+							}
+							setCodeText()
+							var time = setInterval(setCodeText,1000)
+						}
+					})
+				},
+				// 修改密码
+				changePwd: function(){
+					if(!(this.verifyEmail() &&this.verifyCode() && this.verifyPwd())){
+						return false
+					}
+					$._ajax({
+						type: "put",
+						url: "/user/changePwd",
+						data:{
+							email: this.email,
+							code: this.code,
+							password: this.pwd
+						}
+					}).done(function(res){
+						if(res.status == 200){
+							location.href = baseUrl+'/page/login'
+						} else{
+							fixedMsg({type:1,msg:res.msg})
+						}
+					})
+				}
+			}
+		})
+	</script>
+</html>

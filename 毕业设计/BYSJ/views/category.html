@@ -1,0 +1,290 @@
+<!-- <!DOCTYPE html> -->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<!-- <link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/> -->
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootflat/css/site.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/pager.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/jquery/jquery.dotdotdot.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.left-contain{
+				float: left;
+				width: 660px;
+			}
+			.left-contain .panel .panel-body {
+				padding: 0 30px;
+			}
+			.right-contain{
+				float: right;
+				width: 300px;
+			}
+			/* 文章 */
+			.article-head{
+				color: #222;
+				text-align: center;
+			}
+			.article-head h4{
+				font-weight: 700;
+				font-size: 18px;
+				padding: 10px;
+				color: #000;
+			}
+			.article-head .item{
+				display: inline-block;
+				padding: 3px 10px;
+				border: 1px solid #eee;
+				background-color: #f2f2f2;
+			}
+			.article-title{
+				text-align: center;
+			}
+			.content{
+				padding: 20px 30px;
+				color: #222;
+				line-height: 1.8;
+				letter-spacing: 0.3;
+			}
+			.content p{
+				text-indent: 2em;
+			}
+			/* 评论 */
+			.text-right{
+				text-align: right
+			}
+			h4{
+				font-weight: 700;
+				color: #666;
+			}
+			.label-left{
+				width: 50px;
+			}
+			.label-block{
+				margin-left: 50px;
+				padding-left: 10px;
+			}
+			.label-item .user-img{
+				width: 100%;
+				height: auto;
+				display: inline-block;
+			}
+			.absolute-right{
+				position: absolute;
+				right: 10px;
+				top: 0;
+			}
+			.border-left{
+				border-width: 2px;
+			}
+			.item{
+				padding: 30px 0 20px;
+				border-bottom: 1px solid #eee;
+			}
+			.item:first-of-type{
+				padding-top: 0;
+			}
+			.item-title{
+				line-height: 50px;
+				height: 50px;
+				font-size: 18px;
+			}
+			.item-body{
+				max-height: 110px;
+				overflow: hidden;			
+			}
+			.item-body p{
+				text-indent: 2em;
+				padding: 0 !important;
+			}
+			.item-bottom{
+				padding: 10px 0 0 0;
+			}
+			.info{
+				line-height: 1;
+				padding: 20px 0 0 12px;
+				font-size: 14px;
+			}
+			[v-cloak]{
+				display: none !important;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head1.html -%>
+		<%- include common/loginModal.html -%>
+		<div class="app-body">
+			<div class="container">
+				<div class="left-contain" id="vm" v-show="show" v-cloak>
+					<div class="part">
+						<div class="panel" style="border: none;" v-cloak>
+							<div class="panel-heading">
+								<span>描述-{{category.name}}</span>
+							</div>
+							<div class="panel-body" v-html="category.describe"></div>
+						</div>
+					</div>
+					<div class="part">
+						<div class="panel">
+							<div class="panel-heading">
+								<span>最新文章</span>
+							</div>
+							<div class="panel-body" v-cloak>
+								<div class="item" v-for="item in article" v-cloak>
+									<div class="item-title clear">
+										<div class="left">{{item.name}}</div>
+										<div class="left info">{{item.author}}</div>
+										<div class="left info">{{item.create_time}}</div>
+									</div>
+									<div class="item-body article-content" v-html="item.content"></div>
+									<div class="item-bottom text-right">
+										<a :href="baseUrl+'/page/article/'+item.id" class="color-green">查看文章</a>
+									</div>
+								</div>
+							</div>
+							<div class="page" v-cloak>
+								<ul class="pagination">
+									<li :class="page<2?'disabled':''">
+										<a :href="page<2?'javascript:;':'#page='+(parseInt(page)-1)"><i class="glyphicon glyphicon-backward"></i></a>
+									</li><li class="active">
+										<a href="#">{{page}}</a>
+									</li><li :class="page>=all_page?'disabled':''">
+										<a :href="page>=all_page?'javascript:;':'#page='+(parseInt(page)+1)"><i class="glyphicon glyphicon-forward"></i></a>
+									</li><li class="page-input">跳转到<input type="number" v-model="go_page"/>页
+									</li><li><button class="btn btn-primary" type="button" @click="getPage()">跳转</button></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+					
+				</div>
+				<!--right-->
+				<%- include common/side_right.html -%>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+		<script>
+			window.vm = new Vue({
+				el : "#vm",
+				data:{
+					categoty_id: location.search.split('category=')[1],
+					page : location.hash.split('=')[1] || 1,
+					all_page : 1,
+					go_page: '',
+					article: [],
+					article_content: [],
+					category: '',
+					show: false
+				},
+				created: function(){
+					this.hashChange()
+					this.getCategory()
+					this.getAricle()
+					this.getAriclePage()
+				},
+				mounted: function() {
+					
+				},
+				methods:{
+					// 去除省略
+					removeEllipsis: function(){
+						var that = this
+						while(that.article_content.length != 0){
+							that.article_content.pop().destroy()
+						}
+					},
+					// 文章省略
+					textEllipsis: function(){
+						var that = this
+						$('.article-content').each(function(i,item){
+							that.article_content.push($(item).dotdotdot({
+								watch: true,
+								truncate: "letter"
+							}).data('dotdotdot'))
+						})
+					},
+					hashChange: function(){
+						var that = this
+						window.onhashchange = function(){
+							that.page = location.hash.split('=')[1] || 1
+							that.getAricle()
+						}
+					},
+					// 获取跳转页信息
+					getPage: function(){
+						if(isNaN(parseInt(this.go_page))){
+							fixedMsg({type:1,msg:'输入页数错误'})
+							return
+						}
+						location.hash = 'page='+this.go_page
+					},
+					getCategory: function(){
+						var that = this
+						$._ajax({
+							type: "get",
+							url: "/category/info",
+							data: {
+								id: that.categoty_id
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								that.category = res.data
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 获取文章信息
+					getAricle: function(){
+						var that = this
+
+						$._ajax({
+							type: "get",
+							url: "/category/article",
+							data: {
+								id: that.categoty_id,
+								page: that.page,
+								limit: 10
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								that.removeEllipsis()
+								that.article = res.data
+								that.$nextTick(function(){
+									that.textEllipsis()
+									that.show = true
+								})
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					},
+					// 获取文章数量得到总页数
+					getAriclePage: function(){
+						var that = this
+						$._ajax({
+							type: "get",
+							url: "/category/article/count",
+							data: {
+								id: that.categoty_id
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								that.all_page = Math.ceil(res.data.count/10)
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

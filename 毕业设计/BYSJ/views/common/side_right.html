@@ -1,0 +1,96 @@
+<div class="right-contain" id="side-right">
+    <!--通知-->
+    <div class="panel news" v-if="news_list != ''">
+        <div class="panel-heading">
+            <span><a :href="baseUrl+'/page/news/list'">最新消息</a></span>
+        </div>
+        <div class="panel-body">
+            <p v-for="(item,index) in news_list">
+                <a :href="baseUrl+'/page/news/'+item.id">{{item.name}}</a>
+                <span class="badge p-right badge-primary">{{item.create_time}}</span>
+            </p>
+        </div>
+    </div>
+    <!-- 子推荐 -->
+    <div class="panel" v-show="recommend_list != ''">
+        <div class="panel-heading">
+            <span>推荐阅读</span>
+        </div>
+        <div class="panel-body">
+            <a v-for="(item,index) in recommend_list" :href="baseUrl+'/page/article/'+item.article_id">
+                <p>{{item.name}}</p>
+            </a>
+        </div>
+    </div>
+    <!-- 猜你喜欢 -->
+    <div class="panel">
+        <div class="panel-heading">
+            <span>猜你喜欢</span>
+        </div>
+        <div class="panel-body">
+            <p v-for="item in userLike"><a :href="baseUrl+'/page/article/'+item.id">{{item.name}}</a></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.side_right = new Vue({
+        el : "#side-right",
+        data:{
+            userLike: null,
+            recommend_list: [],
+            news_list: []
+        },
+        created: function(){
+            this.getNewsList()
+            this.getRecommendList()
+            this.getUserLike()
+        },
+        methods:{
+            // 猜你喜欢
+            getUserLike: function(){
+                var that = this
+                $._ajax({
+                    type: "get",
+                    url: "/rank/userLike",
+                    data:{
+                        count: 6
+                    }
+                }).done(function(res){
+                    res.status == 200 && (that.userLike = res.data)
+                    res.status != 200 && console.log(res)
+                })
+            },
+            // 推荐列表
+            getRecommendList: function(){
+                var that = this
+                $._ajax({
+                    type: "get",
+                    url: "/recommend/list",
+                    data:{
+                        count: 6
+                    }
+                }).done(function(res){
+                   if(res.status==200){
+                       that.recommend_list = res.data
+                   }
+                })
+            },
+            // 获取消息列表
+			getNewsList : function(){
+				var that = this
+				$._ajax({
+					type: "get",
+					url: "/news/list",
+					data:{
+						count: 6
+					}
+				}).done(function(res){
+					if(res.status == 200){
+						that.news_list = res.data	
+					}
+				})
+			}
+        }
+    })
+</script>

@@ -1,0 +1,122 @@
+<template id="userInfoTpl">
+    <div>
+        <div style="padding-left: 25px">
+            <img class="img" :src="user.img||baseUrl+'/img/user.png'" alt="">
+            <input type="button" class="btn btn-default user-img-btn" value="设置头像" @click="showUserImgModal()">
+        </div>
+        <div class="form-inline">
+            <div class="form-group">
+                <label>账号</label>
+                <span>{{user.account}}</span>
+            </div>
+            <div class="form-group">
+                <label>邮箱</label>
+                <span>{{user.email}}</span>
+            </div>
+            <div class="form-group">
+                <label>笔名</label>
+                <input type="text" class="form-control" v-model="user.name" style="width: 160px">
+            </div>
+            <div class="form-group">
+                <label>手机号</label>
+                <input type="text" class="form-control" v-model="user.phone" style="width: 160px">
+            </div>
+        </div>
+        <div class="form-inline">
+            <div class="form-group">
+                <label>性别</label>
+                <input type="radio" name="sex" v-model="user.sex" value="1"> 男
+                <input type="radio" name="sex" v-model="user.sex" value="0"> 女
+            </div>
+        </div>
+        <div class="form-inline">
+            <div class="form-group">
+                <label>是否为五邑大学在校生</label>
+                <input type="radio" name="isStudent" v-model="user.student" value="1"> 是
+                <input type="radio" name="isStudent" v-model="user.student" value="0"> 否
+            </div>
+            <div class="form-group" v-show="user.student==1">
+                <label>学号</label>
+                <input type="text" class="form-control" v-model="user.sno" style="width: 160px">
+            </div>
+        </div>
+        <div class="form-inline">
+            <div class="form-group" style="margin-left: 25px">
+                <button type="button" @click="save()" class="btn btn-primary">保存</button>
+            </div>
+        </div>
+        <!-- 模态框（Modal） -->
+        <div class="modal fade" id="set_user_img" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h5 class="modal-title" id="myModalLabel"><font style="font-size: 16px;">设置头像</font></h5>
+                    </div>
+                    <div class="modal-body">
+                        <iframe src="" style="height: 360px;width: 100%;" frameborder="0"></iframe>
+                    </div>
+                    <!-- <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" @click="changeUser()">提交</button>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
+<script>
+    Vue.component('user-info',{
+        template: '#userInfoTpl',
+        props: ['user'],
+        data:{
+            user: getStorage().user,
+            name: '123'
+        },
+        created: function(){
+            sessionStorage.lastPage = location.href
+            this.getUserInfo()
+        },
+        methods:{
+          getUserInfo: function(){
+            var that = this
+            $._ajax({
+                type: "get",
+                url: "/user"
+            }).done(function(res){
+                that.user = res.data
+            })
+          },
+          save: function(){
+            var that = this
+            if(that.user.name == '') return fixedMsg({type:2,msg:'笔名不能为空'})
+            if(!that.checkPhone()) return false
+            if(that.user.sex == '') return fixedMsg({type:2,msg:'性别不能为空'})
+        //    if(that.user.student == 1 && that.user.sno != '') return fixedMsg({type:2,msg:'学号不能为空'})
+            $._ajax({
+                type: "put",
+                url: "/user/info",
+                data: that.user
+            }).done(function(res){
+                if(res.status  == 200){
+                    vm.getUserInfo()
+                    fixedMsg({type:0,msg:'修改成功'})
+                } else {
+                    fixedMsg({type:1,msg:'修改失败'})
+                }
+            })
+          },
+          checkPhone: function(){
+            var phone = this.user.phone
+            if(phone != ''&& !/^\d{11}$/.test(phone)){
+                fixedMsg({type:2,msg:'手机号格式不正确'})
+                return false
+            }
+            return true
+          },
+          showUserImgModal: function(){
+              location.href = baseUrl+'/page/setUserImg'
+          }
+        }
+    })
+</script>

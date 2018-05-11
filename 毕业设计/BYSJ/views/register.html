@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/register.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.page{
+				margin-top: 10px;
+				padding: 10px;
+			}
+			h4{
+				font-size: 16px;
+				margin: 0 0 30px 0;
+				padding: 10px;
+				font-weight: 700;
+				border-bottom: 1px solid #8dc61e;
+			}
+			form{
+				width: 400px;
+				margin: auto;
+				font-size: 16px;
+			}
+			input[type="radio"]{
+				top: 8px;
+			}
+			.input{
+				width: 100%;
+				max-width: 300px;
+				height: 100%;
+				line-height: 2;
+				border-radius: 3px;
+				background-color: #f8f8f8;
+				border: 1px solid #ddd;
+				padding: 0 10px;
+				font-size: 16px;
+			}
+			.item{
+				position: relative;
+				height: 40px;
+				line-height: 40px;
+				margin: 8px 0;
+			}
+			.item .left{
+				position: absolute;
+				top: 0;
+				left: 0;
+				bottom: 0;
+				width: 150px;
+				text-align: right;
+				padding-right: 15px;
+			}
+			.item .right{
+				margin-left: 150px;
+				height: 100%;
+				float: none;
+			}
+			#submit{
+				width: 120px;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head2.html -%>
+		<div class="app-body" id="vm">
+			<div class="container page">
+				<h4>用户注册</h4>
+				<form action="">
+					<div class="item">
+						<div class="left">用户名</div>
+						<div class="right">
+							<input type="text" class="input" v-model='account' @blur='verifyAccount'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="left">笔名</div>
+						<div class="right">
+							<input type="text" class="input" v-model='name' @blur='verifyName'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="left">密码</div>
+						<div class="right">
+							<input type="password" class="input" v-model='pwd1' @blur='verifyPwd1'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="left">确认密码</div>
+						<div class="right">
+							<input type="password" class="input" v-model='pwd2' @blur='verifyPwd2'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="left">邮箱</div>
+						<div class="right">
+							<input type="tel" class="input" v-model='email' @blur='verifyEmail'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="left">验证码</div>
+						<div class="right">
+							<input type="text" class="input" style="width: 100px;" v-model='captcha'>
+							<button class="btn btn-default green-btn" type="button" @click='getCode'>发送验证码</button>
+						</div>
+					</div>
+					<div class="item">
+						<div class="left">是否在读五邑大学</div>
+						<div class="right">
+							<label class="radio-inline">
+								<input type="radio"  name="student" value="1" v-model='isStudent'> <span>是</span>
+							</label>
+							<label class="radio-inline">
+								<input type="radio" name="student" value="0" v-model='isStudent'> <span>不是</span>
+							</label>
+						</div>
+					</div>
+					<div class="item" v-show='isStudent==1'>
+						<div class="left">学号</div>
+						<div class="right">
+							<input type="text" class="input" v-model='SNO' @blur='verifySNO'>
+						</div>
+					</div>
+					<div class="item">
+						<div class="right">
+							<button class="btn btn-default green-btn" id="submit" type="button" @click='register'>确认</button>
+						</div>
+					</div>
+				</form>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+	</body>
+</html>

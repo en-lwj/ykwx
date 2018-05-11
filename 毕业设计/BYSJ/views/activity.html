@@ -1,0 +1,177 @@
+<!-- <!DOCTYPE html> -->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<!-- <link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/> -->
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootflat/css/site.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/pager.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/jquery/jquery.dotdotdot.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.left-contain{
+				float: left;
+				width: 660px;
+				min-height: 100%;
+			}
+			.right-contain{
+				float: right;
+				width: 300px;
+			}
+			/* 文章 */
+			.article-head{
+				color: #222;
+				text-align: center;
+			}
+			.article-head h4{
+				font-weight: 700;
+				font-size: 18px;
+				padding: 10px;
+				color: #000;
+			}
+			.article-head .item{
+				display: inline-block;
+				padding: 3px 10px;
+				border: 1px solid #eee;
+				background-color: #f2f2f2;
+			}
+			.article-title{
+				text-align: center;
+			}
+			.content{
+				padding: 20px 30px;
+				color: #222;
+				line-height: 1.8;
+				letter-spacing: 0.3;
+			}
+			.content p{
+				text-indent: 2em;
+			}
+			/* 评论 */
+			.text-right{
+				text-align: right
+			}
+			h4{
+				font-weight: 700;
+				color: #666;
+			}
+			.label-left{
+				width: 50px;
+			}
+			.label-block{
+				margin-left: 50px;
+				padding-left: 10px;
+			}
+			.label-item .user-img{
+				width: 100%;
+				height: auto;
+				display: inline-block;
+			}
+			.absolute-right{
+				position: absolute;
+				right: 10px;
+				top: 0;
+			}
+			.border-left{
+				border-width: 2px;
+			}
+			.item{
+				padding: 30px 0 20px;
+				border-bottom: 1px solid #eee;
+			}
+			.item:first-of-type{
+				padding-top: 0;
+			}
+			.item-title{
+				line-height: 50px;
+				height: 50px;
+				font-size: 18px;
+			}
+			.item-body{
+				max-height: 110px;
+				overflow: hidden;			
+			}
+			.item-body p{
+				text-indent: 2em;
+				padding: 0 !important;
+			}
+			.info{
+				line-height: 1;
+				padding: 20px 0 0 12px;
+				font-size: 14px;
+			}
+			[v-cloak]{
+				display: none !important;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head1.html -%>
+		<%- include common/loginModal.html -%>
+		<div class="app-body">
+			<div class="container">
+				<div class="left-contain" id="vm">
+					<div class="part" style="min-height: 100%;">
+						<div class="panel" style="border: none;" v-cloak>
+							<div class="panel-heading">
+								<span>活动列表</span>
+							</div>
+							<div class="panel-body">
+								<div class="panel panel-success" v-for="item in activities" v-cloak>
+									<div class="panel-heading">
+									  <h3 class="panel-title">{{item.year}}</h3>
+									</div>
+									<div class="list-group">
+										<span v-for="(list,list_index) in item.activities" class="list-group-item"><a :href="baseUrl+'/page/prize/'+list.id">{{list.name}}</a><span v-if="ifRunning(list.end_time)" class="badge badge-primary">正在进行</span></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>	
+				</div>
+				<!--right-->
+				<%- include common/side_right.html -%>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+		<script>
+			window.vm = new Vue({
+				el : "#vm",
+				data:{
+					activities: null
+				},
+				created: function(){
+					this.getActivities()
+				},
+				mounted: function() {
+					
+				},
+				methods:{
+					ifRunning: function(val){
+						return Date.parse(val) > Date.now()
+					},
+					getActivities: function(){
+						var that = this
+						$._ajax({
+							type: "get",
+							url: "/activity/year/all"
+						}).done(function(res){
+							if(res.status == 200){
+								that.activities = res.data
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

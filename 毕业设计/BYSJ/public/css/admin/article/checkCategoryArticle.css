@@ -1,0 +1,18 @@
+@media (min-width: 768px){
+    #contentModal .modal-dialog {
+        width: 700px;
+        margin: 30px auto;
+    }
+}
+
+.article-content{
+    padding: 0px 5px;
+    color: #222;
+    line-height: 1.8;
+    letter-spacing: 0.3;
+    font-family: sans-serif,'Microsoft Yahei'; 
+    font-size: 14px;
+}
+.article-content p{
+    text-indent: 2em;
+}

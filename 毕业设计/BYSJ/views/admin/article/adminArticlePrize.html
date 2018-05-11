@@ -1,0 +1,334 @@
+<!-- <link rel="stylesheet" href="<%=Host%>/css/admin/article/checkCategoryArticle.css"> -->
+<div id="temp">
+    <div style="padding:　10px">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="">活动年份</label>
+                <select class="form-control input-sm" style="min-width: 100px;" v-model="year" @change="queryActivityByYear()">
+                    <option v-for="item in year_list" :key="item.year" :value="item.year">{{item.year}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="">活动名称</label>
+                <select class="form-control input-sm" style="min-width: 100px;" v-model="activity_id">
+                    <option v-for="item in year_activity" :key="item.id" :value="item.id">{{item.name}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary btn-sm" @click="getArticleList(1)">查询活动</button>
+                <button class="btn btn-info btn-sm" v-show="activity.is_publish==0" @click="setIsPublish(1)">发布活动</button>
+                <button class="btn btn-default btn-sm" v-show="activity.is_publish==1" @click="setIsPublish(0)">取消发布</button>
+            </div>
+        </form>
+
+        <form class="form-inline padding-top-sm">
+            <div class="form-group">
+                <label for="">活动状态：</label>
+                <span v-show="if_end" class="badge badge-info">已结束</span>
+                <span v-show="!if_end"  class="badge badge-primary">正在进行中</span>
+            </div>
+            <div class="form-group">
+                <label for="">活动发布状态：</label>
+                <span v-show="activity.is_publish==1"  class="badge badge-success">已发布</span>
+                <span v-show="activity.is_publish==0"  class="badge badge-success">未发布</span>
+            </div>
+        </form>
+
+    </div>
+    <div class="padding-top-sm center" v-show="article_list.length==0">
+        <span class="color-888">暂无稿件...</span>
+    </div>
+    <div class="table-responsive" v-show="article_list.length!=0">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>文章名称</td>
+                    <td>作者</td>
+                    <td>投稿类型</td>
+                    <td>投稿栏目</td>
+                    <td>平均分</td>
+                    <td>奖项</td>
+                    <td>投稿时间</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item,index) in article_list' :key="item.id">
+                    <td>{{item.id}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.author}}</td>
+                    <td>活动</td>
+                    <td>{{item.activity_name != null? item.activity_name:item.category_name}}</td>
+                    <td>
+                        <span class="badge" :class="item.score==null? 'badge-warning': 'badge-success'">
+                        {{item.score==null? '未评分': item.score}}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-success">
+                        {{item.prize_type | tranPrize}}
+                        </span>
+                    </td>
+                    <td>{{item.create_time}}</td>
+                    <td style="white-space: nowrap;">                       
+                        <button class="btn btn-primary btn-xs" :disabled="item.is_recommend==1?'disabled':false" @click="showContentModal(index)">查看文章</button>
+                        <button class="btn btn-success btn-xs" @click="showSetPrizeModal(index)">奖项设置</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="page" v-show="article_list.length!=0" v-cloak>
+        <ul class="pagination">
+            <li :class="page<2?'disabled':''">
+                <a href="javascript:;" @click="getPage(page-1)"><i class="glyphicon glyphicon-backward"></i></a>
+            </li><li class="active">
+                <a href="javascript:;" @click="getPage(page)">{{page}}</a>
+            </li><li :class="page>=all_page?'disabled':''">
+                <a href="javascript:;"  @click="getPage(page+1)"><i class="glyphicon glyphicon-forward"></i></a>
+            </li><li class="page-input">跳转到<input type="number" v-model="go_page" @input="inputPage()"/>页
+            </li><li><button class="btn btn-primary" type="button" @click="getPage()">跳转</button></li>
+        </ul>
+    </div>
+
+    <!-- 推荐语模态框（Modal） -->
+    <div class="modal fade" id="contentModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">{{article_title}}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="padding-top-sm center" v-show="content==''">
+                        <span class="color-888">加载...</span>
+                    </div>
+                    <div class="article-content" v-html="content">
+
+                    </div>
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 评奖模态框（Modal） -->
+    <div class="modal fade" id="setPrizeModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">评奖</h4>
+                </div>
+                <div class="modal-body">
+                    <form class="form-inline">
+                        <div class="form-group">
+                            <label for="">奖项设置</label>
+                            <select class="form-control input-sm" style="min-width: 100px;" v-model="prize">
+                                <option v-for="item in prize_list" :key="item.value" :value="item.value">{{item.name}}</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="setPrizeSure()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+
+
+<script> 
+    var vm = new Vue({
+        el: '#temp',
+        data:　{
+            // 稿件列表
+            article_list: [],
+            select_index: null,
+            article_title:'',
+            content: '',
+            //根据年份获取的活动列表
+            year_activity: [],
+            activity_id: '',
+            activity:'',
+            // 当前活动的年份
+            year: '',
+            year_list: [],
+            // 当前页数
+            page: 1,
+            go_page: '',
+            all_page: 1,
+            // 评奖
+            prize: 0,
+            prize_list:[
+                {value:0,name:"无"},
+                {value:10,name:"特等奖"},
+                {value:11,name:"一等奖"},
+                {value:12,name:"二等奖"},
+                {value:13,name:"三等奖"},
+                {value:14,name:"四等奖"}
+            ]
+        },
+        created: function () {
+            this.getYearList(()=>{
+                this.queryActivityByYear(()=>{
+                    this.getArticleList(1)
+                })
+            })
+        },
+        filters: {
+            tranPrize: function(val){
+                var res = '无'
+                switch(String(val)){
+                    case '10': res="特等奖"; break;
+                    case '11': res="一等奖"; break;
+                    case '12': res="二等奖"; break;
+                    case '13': res="三等奖"; break;
+                    case '14': res="四等奖"; break;
+                    default: res = "无"
+                }
+                return res
+            }
+        },
+        computed: {
+            if_end: function(){
+                return Date.parse(this.activity.end_time) < Date.now()
+            }
+        },
+        methods: {
+            getArticleList: function(page){
+                var that = this
+                $._ajax({
+                    url: '/activity/article/'+this.activity_id,
+                    data:{
+                        page: page,
+                        limit: 10
+                    }
+                }).done(function(res){
+                    that.article_list = res.data.data
+                    that.all_page = parseInt(res.data.all_page)
+                    that.page = parseInt(page)
+                    that.year_activity.forEach(function(item,i){
+                        if(item.id == that.activity_id){
+                            that.activity = item
+                        }
+                    })
+                })
+            },
+            // 获取年份列表
+            getYearList: function(fn){
+                var that = this
+                $._ajax({
+                    url: '/activity/year'
+                }).done(function(res){
+                    that.year_list = res.data
+                    that.year = res.data[0].year
+                    fn()
+                })
+            },
+            // 根据年份查询活动列表
+            queryActivityByYear: function(fn){
+                var that = this
+                $._ajax({
+                    url: '/activity/year/'+that.year
+                }).done(function(res){
+                    that.year_activity = res.data
+                    that.activity = res.data[0]
+                    that.activity_id = res.data[0].id
+                    fn()
+                })
+            },
+            getPage:function(page){
+                if(page!=undefined){
+                    if(page<=0) return
+                    if(page>this.all_page) return
+                }
+                else if(this.go_page==''){
+                    fixedMsg({type: 2, msg:'页数不能为空'})
+                    return
+                }
+                this.getArticleList(parseInt(page||this.go_page))
+            },
+            // 输入页数时
+            inputPage: function(){
+                var page = parseInt(this.go_page)
+                if(page>this.all_page) this.go_page = this.all_page
+                else if(page<1) this.go_page = 1
+            },
+            showSetPrizeModal: function(index){
+                this.select_index = index
+                this.prize =  this.article_list[index].prize_type||0
+                $('#setPrizeModal').modal({
+                    backdrop: false
+                })
+            },
+            // 确认评奖
+            setPrizeSure: function(){
+                var that = this
+                var index = this.select_index
+                $._ajax({
+                    type: 'post',
+                    url: '/activity/prize/'+that.article_list[index].id,
+                    data:{
+                        activity_id: this.activity_id,
+                        prize: this.prize
+                    }
+                }).done(function(res){
+                    if(res.status==200){
+                        that.article_list[index].prize_type = that.prize
+                        that.prize = 0
+                        $('#setPrizeModal').modal('hide')
+                        fixedMsg({type: 0, msg:'奖项设置成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'奖项设置失败'})
+                })
+            },
+            
+            showContentModal: function(index){
+                this.select_index = index
+                this.article_title = this.article_list[index].name
+                this.content = ''
+                var that = this
+                $('#contentModal').modal({
+                    backdrop: false
+                })
+                $._ajax({
+                    type: 'get',
+                    url: '/article/'+this.article_list[index].article_content_id+'/content'
+                }).done(function(res){
+                    if(res.status==200){
+                        that.content = res.data[0].content
+                        if(that.content=='') that.content = '内容为空'
+                    }
+                    else fixedMsg({type: 1, msg:'获取文章内容失败'})
+                })
+            },
+            // 发布或取消发布
+            setIsPublish: function(val){
+                var that = this
+                var index = this.select_index
+                $._ajax({
+                    type: 'put',
+                    url: '/activity/publish/'+that.activity.id,
+                    data:{
+                        is_publish: val
+                    }
+                }).done(function(res){
+                    if(res.status==200){
+                        that.activity.is_publish = val
+                        if(val==1) fixedMsg({type: 0, msg:'活动发布成功'})
+                        if(val==0) fixedMsg({type: 0, msg:'取消发布成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'活动发布失败'})
+                })
+            }
+        }
+    })
+</script>

@@ -1,0 +1,144 @@
+.page{
+    padding: 0;
+    text-align: center;
+}
+.page .btn {
+    border-radius: 3px;
+}
+.modal{
+    background-color: rgba(0, 0, 0, 0.4);
+}
+.modal label{
+    float: left;
+    width: 100px;
+    line-height: 30px;
+    text-align: right;
+    padding: 0 6px;
+}
+@media(min-width: 768px){
+    .form-inline .form-group{
+        margin-right: 8px;
+    }
+}
+/* 通用类 */
+.center{
+	text-align: center;
+}
+.clear{
+	clear: both;
+}
+
+.margin-sm{
+	margin: 10px;
+}
+.margin-right-sm{
+	margin-right: 10px;
+}
+.padding-sm{
+	padding: 10px;
+}
+.padding-md{
+	padding: 20px;
+}
+.padding-lg{
+	padding: 20px 30px;
+}
+.padding-top-xs{
+	padding-top: 5px;
+}
+.padding-top-sm{
+	padding-top: 10px;
+}
+.padding-top-md{
+	padding-top: 20px;
+}
+.padding-bottom-sm{
+	padding-bottom: 10px;
+}
+.padding-bottom-md{
+	padding-bottom: 20px; 
+}
+.padding-left-xs{
+	padding-left: 5px;
+}
+.padding-left-sm{
+	padding-left: 10px;
+}
+.padding-left-md{
+	padding-left: 20px;
+}
+.padding-right-xs{
+	padding-right: 5px;
+}
+.padding-right-sm{
+	padding-right: 10px;
+}
+.padding-right-md{
+	padding-right: 20px;
+}
+
+.border-left{
+	border-left: 1px solid #eee;
+}
+.border-top{
+	border-top: 1px solid #eee;
+}
+.border-bottom{
+	border-bottom: 1px solid #eee;
+}
+
+.border-green{
+	border-color:  #8DC61E;
+}
+.btn-success{
+	background-color: #8DC61E;
+}
+
+.color-green{
+	color: #8DC61E;
+}
+
+.font-xs{
+	font-size: 12px;
+}
+.font-sm{
+	font-size: 14px;
+}
+.font-md{
+	font-size: 16px;
+}
+.font-lg{
+	font-size: 18px;
+}
+
+.color-666{
+	color: #666;
+}
+.color-888{
+	color: #888;
+}
+
+.relative{
+	position: relative;
+}
+
+.left{
+	float: left;
+}
+.right{
+	float: right;
+}
+
+
+.label-item{
+	clear: both;
+}
+
+.label-left{
+	float: left;
+	width: 100px;
+}
+.label-block{
+	display: block;
+	margin-left: 100px;
+}

@@ -1,0 +1,238 @@
+<link rel="stylesheet" href="<%=Host%>/css/admin/article/checkCategoryArticle.css">
+<div id="temp">
+    <!-- <div style="padding:　10px">
+        <form class="form-inline">
+            <div class="form-group">
+                <button class="btn btn-primary btn-sm" @click="queryNewsByYear()">查询</button>
+            </div>
+        </form>
+    </div> -->
+    <div class="padding-top-sm center" v-show="article_list.length==0">
+        <span class="color-888">无待审核稿件...</span>
+    </div>
+    <div class="table-responsive" v-show="article_list.length!=0">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>文章名称</td>
+                    <td>作者</td>
+                    <td>投稿类型</td>
+                    <td>投稿栏目</td>
+                    <td>状态</td>
+                    <td>投稿时间</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item,index) in article_list' :key="item.id">
+                    <td>{{item.id}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.author}}</td>
+                    <td>日常</td>
+                    <td>{{item.activity_name != null? item.activity_name:item.category_name}}</td>
+                    <td>
+                        <span class="badge" :class="item.is_show==0?'badge-primary': item.is_show==-1? 'badge-warning': 'badge-success'">
+                        {{item.is_show==0?'待审核': item.is_show==-1? '未通过': '已通过'}}
+                        </span>
+                    </td>
+                    <td>{{item.create_time}}</td>
+                    <td style="white-space: nowrap;">                       
+                        <button class="btn btn-primary btn-xs" :disabled="item.is_recommend==1?'disabled':false" @click="showContentModal(index)">查看文章</button>
+                        <button class="btn btn-success btn-xs" :disabled="item.is_show==1?'disabled':false" @click="pass(index)">上架</button>
+                        <button class="btn btn-warning btn-xs" :disabled="item.is_show==-1?'disabled':false" @click="unpass(index)">下架</button>
+                        <button class="btn btn-danger btn-xs" @click="showDelModal(index)">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="page" v-show="article_list.length!=0" v-cloak>
+        <ul class="pagination">
+            <li :class="page<2?'disabled':''">
+                <a href="javascript:;" @click="getPage(page-1)"><i class="glyphicon glyphicon-backward"></i></a>
+            </li><li class="active">
+                <a href="javascript:;" @click="getPage(page)">{{page}}</a>
+            </li><li :class="page>=all_page?'disabled':''">
+                <a href="javascript:;"  @click="getPage(page+1)"><i class="glyphicon glyphicon-forward"></i></a>
+            </li><li class="page-input">跳转到<input type="number" v-model="go_page" @input="inputPage()"/>页
+            </li><li><button class="btn btn-primary" type="button" @click="getPage()">跳转</button></li>
+        </ul>
+    </div>
+
+    <!-- 推荐语模态框（Modal） -->
+    <div class="modal fade" id="contentModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">{{article_title}}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="padding-top-sm center" v-show="content==''">
+                        <span class="color-888">加载...</span>
+                    </div>
+                    <div class="article-content" v-html="content">
+
+                    </div>
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="delModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">删除</h4>
+                </div>
+                <div class="modal-body">
+                    你确定删除吗？
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="delSure()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script> 
+    var vm = new Vue({
+        el: '#temp',
+        data:　{
+            // 根据年份获取的活动列表
+            article_list: [],
+            select_index: null,
+            article_title:'',
+            content: '',
+
+            // 当前页数
+            page: 1,
+            go_page: '',
+            all_page: 1,
+        },
+        created: function () {
+            this.getArticleList(this.page)
+        },
+        computed: {
+
+        },
+        methods: {
+            getArticleList: function(page){
+                var that = this
+                $._ajax({
+                    url: '/category/article/processing',
+                    data:{
+                        page: page,
+                        limit: 10
+                    }
+                }).done(function(res){
+                    that.article_list = res.data.data
+                    that.all_page = parseInt(res.data.all_page)
+                    that.page = parseInt(page)
+                })
+            },
+            getPage:function(page){
+                if(page!=undefined){
+                    if(page<=0) return
+                    if(page>this.all_page) return
+                }
+                else if(this.go_page==''){
+                    fixedMsg({type: 2, msg:'页数不能为空'})
+                    return
+                }
+                this.getArticleList(parseInt(page||this.go_page))
+            },
+            // 输入页数时
+            inputPage: function(){
+                var page = parseInt(this.go_page)
+                if(page>this.all_page) this.go_page = this.all_page
+                else if(page<1) this.go_page = 1
+            },
+            showDelModal: function(index){
+                this.select_index = index
+                $('#delModal').modal({
+                    backdrop: false
+                })
+            },
+            // 确认删除
+            delSure: function(){
+                var that = this
+                var index = this.select_index
+                $._ajax({
+                    type: 'delete',
+                    url: '/article/'+ this.article_list[index].id
+                }).done(function(res){
+                    if(res.status==200){
+                        that.article_list.splice(index,1)
+                        $('#delModal').modal('hide')
+                        fixedMsg({type: 0, msg:'删除成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'删除失败'})
+                })
+            },
+            // 设置上架
+            pass: function(index){
+                var that = this
+                $._ajax({
+                    type: 'put',
+                    url: '/article/'+ this.article_list[index].id,
+                    data:{
+                        is_show : 1
+                    }
+                }).done(function(res){
+                    if(res.status==200){
+                        that.$set(that.article_list[index],'is_show',1)
+                        fixedMsg({type: 0, msg:'上架成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'上架失败'})
+                })
+            },
+            // 设置下架
+            unpass: function(index){
+                var that = this
+                $._ajax({
+                    type: 'put',
+                    url: '/article/'+ this.article_list[index].id,
+                    data:{
+                        is_show : -1
+                    }
+                }).done(function(res){
+                    if(res.status==200){
+                        that.$set(that.article_list[index],'is_show',-1)
+                        fixedMsg({type: 0, msg:'下架成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'下架失败'})
+                })
+            },
+            showContentModal: function(index){
+                this.select_index = index
+                this.article_title = this.article_list[index].name
+                this.content = ''
+                var that = this
+                $('#contentModal').modal({
+                    backdrop: false
+                })
+                $._ajax({
+                    type: 'get',
+                    url: '/article/'+this.article_list[index].article_content_id+'/content'
+                }).done(function(res){
+                    if(res.status==200){
+                        that.content = res.data[0].content
+                        if(that.content=='') that.content = '内容为空'
+                    }
+                    else fixedMsg({type: 1, msg:'获取文章内容失败'})
+                })
+            }
+        }
+    })
+</script>

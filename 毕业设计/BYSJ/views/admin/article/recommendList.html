@@ -1,0 +1,232 @@
+<link rel="stylesheet" href="<%=Host%>/css/admin/article/recommendList.css">
+<div id="temp">
+    <div style="padding:　10px">
+        <div class="form-inline">
+            <div class="form-group">
+                <button class="btn btn-primary btn-sm" @click="showMainListModal()">修改排名</button>
+            </div>
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td>排名</td>
+                    <td>id</td>
+                    <td>文章名称</td>
+                    <td>作者</td>
+                    <td>加入推荐时间</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item,index) in recommend_list' :key="item.id">
+                    <td>
+                        <span class="badge" :class="item.rank==1000?'':'badge-primary'">{{item.rank}}</span>
+                    </td>
+                    <td>{{item.id}}</td>
+                    <td><a :href="baseUrl+'/page/article/'+item.article_id">{{item.name}}</a></td>
+                    <td>{{item.author}}</td>
+                    <td>{{item.create_time}}</td>
+                    <td>
+                        <button class="btn btn-primary btn-xs" @click="showEditModal(index)">编辑</button>
+                        <button class="btn btn-success btn-xs" v-show="item.inMainList" disabled>已加入排序</button>
+                        <button class="btn btn-primary btn-xs" v-show="!item.inMainList" @click="addMainList(index)">加入排序</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="mainListModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">推荐排名</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-condensed">
+                            <thead>
+                                <tr>
+                                    <td>排名</td>
+                                    <td>id</td>
+                                    <td>文章名称</td>
+                                    <td>作者</td>
+                                    <td>加入推荐时间</td>
+                                    <td>操作</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for='(item,index) in clone_list' :key="item.id">
+                                    <td>
+                                        <span class="badge badge-primary">{{index+1}}</span>
+                                    </td>
+                                    <td>{{item.id}}</td>
+                                    <td>{{item.name}}</td>
+                                    <td>{{item.author}}</td>
+                                    <td>{{item.create_time}}</td>
+                                    <td>
+                                        <button class="btn btn-success btn-xs" :disabled="index==0? true:false" @click="moveUp(index)">上移</button>
+                                        <button class="btn btn-primary btn-xs" :disabled="index+1==clone_list.length? true:false" @click="moveDown(index)">下移</button>
+                                        <button class="btn btn-danger btn-xs" @click="removeRank(index)">移除</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="rankSure()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 编辑模态框（Modal） -->
+    <div class="modal fade" id="editModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">修改推荐语</h4>
+                </div>
+                <div class="modal-body">
+                    <textarea class="form-control" v-model="describe_edit" maxlength="150" rows="8"></textarea>
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="editSure()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script> 
+    var vm = new Vue({
+        el: '#temp',
+        data: 　{
+            recommend_list: [],
+            select_index: null,
+            main_list: [],
+            clone_list: [],
+            describe_edit: ''
+        },
+        created: function () {
+            console.log(123)
+            this.getRecommendList()
+        },
+        methods: {
+            
+        },
+        methods: {
+            // 根据年份查询消息列表
+            getRecommendList: function () {
+                var that = this
+                $._ajax({
+                    url: '/recommend/list'
+                }).done(function (res) {
+                    that.recommend_list = res.data
+                    that.getMainList()
+                })
+            },
+            // 获取有排名数据并加inMainList字段
+            getMainList: function () {
+                var that = this
+                that.main_list = []
+                that.recommend_list.forEach(function (item, i) {
+                    if (item.rank != 1000){
+                        that.main_list.push(item)
+                        that.$set(item,'inMainList', true)
+                    } else{
+                        that.$set(item,'inMainList', false)
+                    }
+                })
+            },
+            showEditModal: function(index){
+                this.select_index = index
+                this.describe_edit = this.recommend_list[index].describe
+                $('#editModal').modal({
+                    backdrop: false
+                })
+            },
+            showMainListModal: function (index) {
+                this.clone_list = [].concat(this.main_list)
+                $('#mainListModal').modal({
+                    backdrop: false
+                })
+            },
+            // 加入排序
+            addMainList: function(index){
+                this.select_index = index
+                this.main_list.push(this.recommend_list[index])
+                this.$set(this.recommend_list[index],'inMainList', true)
+            },
+            // 排名上升
+            moveUp: function(index){
+                var up_obj = this.clone_list[index-1]
+                this.clone_list[index-1] = this.clone_list[index]
+                this.clone_list[index] = up_obj
+                this.clone_list.splice(this.clone_list.length)
+            },
+            // 排名下降
+            moveDown: function(index){
+                var up_obj = this.clone_list[index+1]
+                this.clone_list[index+1] = this.clone_list[index]
+                this.clone_list[index] = up_obj
+                this.clone_list.splice(this.clone_list.length)
+            },
+            // 移除排名
+            removeRank: function(index){
+                this.clone_list.splice(index,1) 
+            },
+            // 提交排名
+            rankSure: function () {
+                var that = this
+                var data = []
+                this.clone_list.forEach(function(item,i){
+                    data.push({id:item.id,rank:i+1})
+                })
+                $._ajax({
+                    type: 'put',
+                    url: '/recommend/ranks',
+                    data: {
+                        rank: JSON.stringify(data)
+                    },
+                }).done(function (res) {
+                    if (res.status == 200) {
+                        that.getRecommendList()
+                        $('#mainListModal').modal('hide')
+                        fixedMsg({ type: 0, msg: '修改成功' })
+                    }
+                    else fixedMsg({ type: 1, msg: '删除失败' })
+                })
+            },
+            // 修改推荐语
+            editSure: function(){
+                var that = this
+                var id = this.recommend_list[this.select_index].id
+                $._ajax({
+                    type: 'put',
+                    url: '/recommend/'+id,
+                    data: {
+                        describe: this.describe_edit
+                    }
+                }).done(function (res) {
+                    if (res.status == 200) {
+                        that.recommend_list[that.select_index].describe = that.describe_edit
+                        $('#editModal').modal('hide')
+                        fixedMsg({ type: 0, msg: '修改成功' })
+                    }
+                    else fixedMsg({ type: 1, msg: '删除失败' })
+                })
+            }
+        }
+    })
+</script>

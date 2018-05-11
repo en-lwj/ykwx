@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<link rel="stylesheet" type="text/css" href="/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/>
+		<link rel="Shortcut Icon" href="favicon.ico">
+		<title>邑刊文学</title>
+		<style>
+			#panel {
+			  float:left;
+			  border:1px solid #CCC;
+			  position:relative;
+			  font-size:0px;
+			  overflow:hidden;
+			  user-select:none;
+			  background:#FFF;
+			  text-align:left;
+			}
+			#image {
+			  border:1px solid red;
+			  display:inline-block;
+			  visibility:hidden;
+			  transform-origin:left top;
+			}
+			#mask {
+			  display:none;
+		      box-sizing: content-box;
+			  position:absolute;z-index:1;
+			  opacity:0.5;
+			  filter:progid:DXImageTransform.Microsoft.Alpha(opacity=50);
+			}
+			#point {
+			  display:none;
+			  border:1px solid #CCC;
+			  margin:-1px;
+			  position:absolute;z-index:1;
+			  cursor:move;
+			}
+			#display {
+			  float:left;overflow:hidden;
+			  border:1px solid #CCC;
+			  background:#FFF;
+			}
+			#botton{
+			  float: left;
+			  margin-top: 50px;
+			}
+			.right{
+				float:left;overflow:hidden;
+				width: 200px;
+				padding: 0 10px;
+			}
+			</style>
+			<script src="/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+			<script src="/js/common.js" type="text/javascript" charset="utf-8"></script>
+	</head>
+	<body>
+		
+	<form action="" method="post" enctype="multipart/form-data">
+	  <div id="panel">
+	    <div id="image"></div>
+	    <div id="mask"></div>
+	    <div id="point"></div>
+	  </div>
+	  <div class="right">
+		  <div id="display">
+		    <div id="wrap"></div>
+		  </div>
+		  <div id="botton">
+	  		<input type="file" name="f" />
+			<input type="hidden" name="s" />
+			<input type="hidden" name="x" />
+			<input type="hidden" name="y" />
+			<input type="hidden" name="m" /><br/>
+			<input type="submit" value="上传" class="btn btn-success"/>
+		  </div>
+	  </div>
+	  
+	  
+	</form>
+	<script>
+	onload=function(){
+	  //获取元素
+	  var panel=document.getElementById("panel");
+	  var image=document.getElementById("image");
+	  var mask=document.getElementById("mask");
+	  var point=document.getElementById("point");
+	  var display=document.getElementById("display");
+	  var wrap=document.getElementById("wrap");
+	  var file=document.querySelector("input[type=file]");
+	  var submit=document.querySelector("input[type=submit]");
+	  var form=document.forms[0];
+	  //基本参数初始化
+	  var PANELSIZE=300,DISPLAYSIZE=128;
+	  panel.style.width=PANELSIZE+"px";
+	  panel.style.height=PANELSIZE+"px";
+	  mask.style.border=PANELSIZE+"px solid #CCC";
+	  mask.style.margin=-PANELSIZE+"px";
+	  display.style.width=DISPLAYSIZE+"px";
+	  display.style.height=DISPLAYSIZE+"px";
+	  var pointsize=DISPLAYSIZE,x=0,y=0,mirro;
+	  //提交
+	  submit.onclick=function(){
+	    document.querySelector("input[name=s]").value=mirro.s;
+	    document.querySelector("input[name=x]").value=-parseFloat(wrap.style.marginLeft);
+	    document.querySelector("input[name=y]").value=-parseFloat(wrap.style.marginTop);
+			document.querySelector("input[name=m]").value=DISPLAYSIZE;
+			form.action = baseUrl + '/user/icon'
+	  };
+	  //事件操作兼容
+	  var on,off;
+	  if(-[1,])
+	    on=function(e,n,f){e.addEventListener(n,f);},
+	    off=function(e,n,f){e.removeEventListener(n,f);};
+	  else
+	    on=function(e,n,f){e.attachEvent("on"+n,f);},
+	    off=function(e,n,f){e.detachEvent("on"+n,f);};
+	  //选择文件
+	  on(file,"change",function(){
+	    //加载图片文件
+	    if(file.files){
+	      //现代浏览器使用FileReader加载
+	      var reader=new FileReader;
+	      reader.readAsDataURL(file.files[0]);
+	      reader.onload=function(){
+	        var path=reader.result,img=new Image;
+	        img.onload=function(){
+	          image.style.background="url("+path+") no-repeat";
+	          init(img.width,img.height);
+	        },img.src=path;
+	      };
+	    }else{
+	      //低版本IE使用AlphaImageLoader滤镜加载
+	      //无法直接获取到文件的本地路径，只能通过选区（这是个IE的BUG）
+	      file.select(),file.blur(); //不调用blur的话IE9会出错
+	      var path=document.selection.createRange().text;
+	      image.style.filter="progid:DXImageTransform.Microsoft.AlphaImageLoader(src='"+path+"')";
+	      setTimeout(function(){
+	        init(image.offsetWidth-2,image.offsetHeight-2);
+	      },100);
+	    };
+	    //图片加载成功后展示图片
+	    function init(w,h){
+	      if(point.offsetWidth==0){
+	        mask.style.display=point.style.display="block";
+	        x=0,y=0;
+	      };
+	      var m=Math.max(w,h),s=PANELSIZE/m;
+	      image.w=w,image.h=h,image.s=s;
+	      scale(image,s);
+	      image.style.width=w+"px";
+	      image.style.height=h+"px";
+	      image.style.borderWidth="0px";
+	      image.style.visibility="visible";
+	      resize();
+	    };
+	  });
+	  //拖动裁剪区域
+	  on(point,"mousedown",function(e){
+	    var e=e||event;
+	    var px=x-e.clientX,py=y-e.clientY;
+	    var mouseup,mousemove;
+	    on(document,"mouseup",mouseup=function(){
+	      off(document,"mouseup",mouseup);
+	      off(document,"mousemove",mousemove);
+	    }),on(document,"mousemove",mousemove=function(e){
+	      var e=e||event;
+	      move(px+e.clientX,py+e.clientY);
+	    });
+	  });
+	  //滚轮控制裁剪区域缩放
+	  point["onwheel" in point?"onwheel":"onmousewheel"]=function(e){
+	    var e=e||event;
+	    var delta=(e.wheelDelta?e.wheelDelta/-120:e.deltaY/3)*4;
+	    var value=pointsize+delta;
+	    if(value<32||value>PANELSIZE)return;
+	    pointsize=value;
+	    move(x-delta/2,y-delta/2);
+	    resize();
+	    if(e.preventDefault)e.preventDefault();
+	    return false;
+	  };
+	  //其它操作函数定义
+	  function move(ux,uy){
+	    var m=PANELSIZE-pointsize;
+	    x=Math.min(Math.max(ux,0),m);
+	    y=Math.min(Math.max(uy,0),m);
+	    mask.style.left=point.style.left=x+"px";
+	    mask.style.top=point.style.top=y+"px";
+	    var ratio=Math.max(image.w,image.h)*wrap.firstChild.s;
+	    wrap.style.marginLeft=-(wrap.x=ratio*x/PANELSIZE)+"px";
+	    wrap.style.marginTop=-(wrap.y=ratio*y/PANELSIZE)+"px";
+	  };
+	  function resize(){
+	    mask.style.width=mask.style.height=
+	    point.style.width=point.style.height=
+	      pointsize+"px";
+	    mirro=image.cloneNode();
+	    scale(mirro,mirro.s=image.s*DISPLAYSIZE/pointsize);
+	    wrap.innerHTML="";
+	    wrap.appendChild(mirro);
+	    move(x,y);
+	  };
+	  function scale(e,s){
+	    if("zoom" in e.style)e.style.zoom=s;
+	    else 
+	      e.style.transform="scale("+s+")",
+	      e.style.marginRight=-e.w*(1-s)+"px",
+	      e.style.marginBottom=-e.h*(1-s)+"px";
+	  };
+	};
+	</script>
+	</body>
+</html>

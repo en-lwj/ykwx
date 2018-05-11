@@ -1,0 +1,58 @@
+<template id="userArticleTpl">
+    <div>
+        <div class="center color-888" style="padding-top: 100px;" v-show="article_list==''">你的稿件空空如也。</div>
+        <div class="table-responsive" style="max-height: 430px;overflow: auto; margin-top: -20px;" v-show="article_list!=''">
+                <table class="table table-hover" style="border: 1px solid #e6e6e6;">
+                    <thead>
+                        <tr style="background: #f2f2f2;">
+                            <td>文章名</td>
+                            <td>投稿类型</td>
+                            <td>类别名称</td>
+                            <td>投稿时间</td>
+                            <td>投稿状态</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-cloak v-for="(item,index) in article_list">
+                            <td>
+                                <a v-if="item.is_show==1" class="color-green" :href="baseUrl+'/page/article/'+item.id">{{item.name}}</a>
+                                <span v-if="item.is_show!=1">{{item.name}}</span>
+                            </td>
+                            <td>{{item.type}}</td>
+                            <td>{{item.activity_name != null? item.activity_name:item.category_name}}</td>
+                            <td>{{item.create_time}}</td>
+                            <td>{{item.is_show==0?'待审核': item.is_show==-1? '审核未通过': item.prize=='无'? '已通过':item.prize}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+    </div>
+    
+</template>
+<script>
+    window.a = Vue.component('user-article',{
+        template: '#userArticleTpl',
+        props: ['user'],
+        data: function(){
+            return {
+                user: getStorage().user,
+                article_list: []
+            }
+        },
+        created: function(){
+            sessionStorage.lastPage = location.href
+            this.getArticleList()
+        },
+        methods:{
+          getArticleList: function(){
+            var that = this
+            $._ajax({
+                type: "get",
+                url: "/user/articleList"
+            }).done(function(res){
+                that.article_list = res.data
+            })
+          }
+        }
+    })
+</script>

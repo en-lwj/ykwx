@@ -1,0 +1,127 @@
+<link rel="stylesheet" href="<%=Host%>/css/admin/activity/activityList.css">
+<div id="temp">
+    <div style="padding:　10px">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="">选择年份</label>
+                <select class="form-control input-sm" style="min-width: 100px;width: auto;" v-model="year">
+                    <option v-for="item in year_list" :key="item.year" :value="item.year">{{item.year}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary btn-sm" @click="queryNewsByYear()">查询</button>
+            </div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>消息名称</td>
+                    <td>发布者</td>
+                    <td>发布时间</td>
+                    <td>阅读量</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item,index) in news_list' :key="item.id">
+                    <td>{{item.id}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.author}}</td>
+                    <td>{{item.create_time}}</td>
+                    <td>{{item.all_click}}</td>
+                    <td>
+                        <button class="btn btn-primary btn-xs" @click="del(index)">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+ 
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="delModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h4 class="modal-title">删除</h4>
+                    </div>
+                    <div class="modal-body">
+                        你确定删除吗？
+                    </div>   
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                        <button type="button" class="btn btn-primary" @click="delSure()">提交更改</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+</div>
+
+
+<script> 
+    var vm = new Vue({
+        el: '#temp',
+        data:　{
+            // 根据年份获取的活动列表
+            news_list: [],
+            select_index: null,
+            // 当前活动的年份
+            year: '',
+            year_list: [],
+            editor: null
+        },
+        created: function () {
+            this.getYearList()
+        },
+        computed: {
+
+        },
+        methods: {
+            // 获取年份列表
+            getYearList: function(){
+                var that = this
+                $._ajax({
+                    url: '/news/year'
+                }).done(function(res){
+                    that.year_list = res.data
+                    that.year = res.data[0].year
+                    that.queryNewsByYear()
+                })
+            },
+            // 根据年份查询消息列表
+            queryNewsByYear: function(){
+                var that = this
+                $._ajax({
+                    url: '/news/year/'+that.year
+                }).done(function(res){
+                    that.news_list = res.data
+                })
+            },
+            del: function(index){
+                this.select_index = index
+                $('#delModal').modal({
+                    backdrop: false
+                })
+            },
+            // 确认删除
+            delSure: function(){
+                var that = this
+                var index = this.select_index
+                $._ajax({
+                    type: 'delete',
+                    url: '/news/'+ this.news_list[index].id
+                }).done(function(res){
+                    if(res.status==200){
+                        that.queryNewsByYear()
+                        $('#delModal').modal('hide')
+                    }
+                    else fixedMsg({type: 1, msg:'删除失败'})
+                })
+            }
+        }
+    })
+</script>

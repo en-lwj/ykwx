@@ -1,0 +1,191 @@
+<!-- <!DOCTYPE html> -->
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<!-- <link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/> -->
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootflat/css/site.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/pager.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/jquery/jquery.dotdotdot.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			.left-contain{
+				float: left;
+				width: 660px;
+				min-height: 100%;
+			}
+			.right-contain{
+				float: right;
+				width: 300px;
+			}
+			/* 文章 */
+			.article-head{
+				color: #222;
+				text-align: center;
+			}
+			.article-head h4{
+				font-weight: 700;
+				font-size: 18px;
+				padding: 10px;
+				color: #000;
+			}
+			.article-head .item{
+				display: inline-block;
+				padding: 3px 10px;
+				border: 1px solid #eee;
+				background-color: #f2f2f2;
+			}
+			.article-title{
+				text-align: center;
+			}
+			/* 评论 */
+			.text-right{
+				text-align: right
+			}
+			h4{
+				font-weight: 700;
+				color: #666;
+			}
+			.absolute-right{
+				position: absolute;
+				right: 10px;
+				top: 0;
+			}
+			.border-left{
+				border-width: 2px;
+			}
+			.item{
+				padding: 30px 0 20px;
+				border-bottom: 1px solid #eee;
+			}
+			.panel-item{
+				float: left;
+				width: 50%;
+				border-bottom: 1px solid #eee;
+			}
+			.pricing{
+				text-align: center;
+			}
+			.pricing .unit{
+				width: 290px;
+			}
+			.price-body{
+				text-align: left;
+			}
+			.content{
+				height: 200;
+				overflow: hidden;
+			}
+			.content p{
+				text-indent: 2em;
+				padding: 0 !important;
+			}
+			[v-cloak]{
+				display: none !important;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head1.html -%>
+		<%- include common/loginModal.html -%>
+		<div class="app-body">
+			<div class="container">
+				<div class="left-contain" id="vm">
+					<div class="part" style="min-height: 100%;">
+						<div class="panel" style="border: none;" v-cloak>
+							<div class="panel-heading">
+								<span>查询结果</span>
+							</div>
+							<div class="panel-body">
+								<div v-show="article_list.length == 0" class="color-888 center" v-text="tip"></div>
+								<div class="panel-item" v-for="item in article_list" v-cloak>
+									<ul class="pricing">
+										<li class="unit price-success">
+											<div class="price-title">
+												<p><b class="font-lg"><a :href="baseUrl+'/page/article/'+item.id">{{item.name}}</a></b></p>
+												<p>作者：{{item.author}}</p>
+												<p>时间：{{item.create_time}}</p>
+											</div>
+											<div class="price-body">
+												<div class="content" v-html="item.content"></div>
+											</div>
+										</li>
+									</ul>
+								</div>
+
+							</div>
+						</div>
+					</div>	
+				</div>
+				<!--right-->
+				<%- include common/side_right.html -%>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+		<script>
+			window.vm = new Vue({
+				el : "#vm",
+				data:{
+					key: decodeURI(location.search.substr(1).split('=')[1]),
+					article_list: [],
+					ellipsis_arr:[],
+					tip: '无查询结果'
+				},
+				created: function(){
+					this.getArticleList()
+					vm_head.key = this.key
+				},
+				mounted: function() {
+					
+				},
+				methods:{
+					// 去除省略
+					removeEllipsis: function(){
+						var that = this
+						while(that.ellipsis_arr.length != 0){
+							that.ellipsis_arr.pop().destroy()
+						}
+					},
+					// 文章省略
+					textEllipsis: function(){
+						var that = this
+						$('.content').each(function(i,item){
+							that.ellipsis_arr.push($(item).dotdotdot({
+								watch: true,
+								truncate: "letter"
+							}).data('dotdotdot'))
+						})
+					},
+					getArticleList: function(){
+						var that = this
+						that.tip = "数据库努力查询中..."
+						$._ajax({
+							type: "get",
+							url: "/article/search",
+							data: {
+								key: this.key
+							}
+						}).done(function(res){
+							if(res.status == 200){
+								that.article_list = res.data
+								that.$nextTick(function(){
+									that.textEllipsis()
+								})
+								that.tip = '无查询结果'
+							} else{
+								fixedMsg({type:1,msg:res.msg})
+							}
+						})
+					}
+				}
+			})
+		</script>
+	</body>
+</html>

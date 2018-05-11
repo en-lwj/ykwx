@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="renderer" content="webkit">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+		<title>邑刊文学</title>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootstrap-3.3.7-dist/css/bootstrap.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/plugs/bootflat/css/site.min.css"/>
+		<link rel="stylesheet" type="text/css" href="<%=Host%>/css/common.css"/>
+		<script src="<%=Host%>/plugs/jquery/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/vue/vue.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/plugs/bootstrap-3.3.7-dist/js/bootstrap.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="<%=Host%>/js/common.js" type="text/javascript" charset="utf-8"></script>
+		<style>
+			body{
+				background: #eee;
+			}
+			.app-body{
+				background: transparent;
+			}
+			.page{
+				margin-top: 10px;
+				padding: 10px;
+				min-height: 500px;
+				position: relative;
+			}
+			h4{
+				font-size: 16px;
+				margin: 0 0 30px 0;
+				padding: 10px;
+				font-weight: 700;
+				border-bottom: 1px solid #8dc61e;
+			}
+			.left{
+				position: absolute;
+				top: 0;
+				left: 0;
+				width: 150px;
+				bottom: 0;
+				background: #fff;
+			}
+			.right{
+				position: absolute;
+				top: 0;
+				left: 165px;
+				right: 0;
+				bottom: 0;
+				background: #fff;
+				padding: 10px;
+			}
+			.left-item {
+				line-height: 40px;
+				font-size: 16px;
+				border-bottom: 1px solid #eee;
+				padding-left: 30px;
+				border-left: 3px solid #fff;
+				cursor: pointer;
+			}
+			.left-item.active,.left-item:hover{
+				background-color: #dfdfdf;
+				border-left: 3px solid #8dc61e;
+			}
+			.img{
+				width: 100px;
+				height: 100px;
+				display: inline-block;
+			}
+			#file{
+				display: inline-block;
+				vertical-align: bottom;
+				margin-left: 10px;
+			}
+			.form-group {
+				margin: 15px;
+				margin-right: 55px;
+				min-width: 253px;
+				height: 30px;
+			}
+			.form-group label{
+				min-width: 70px;
+    			padding: 5px 10px;
+			}
+			.news-icon{
+				background: #ff7139;
+				display: inline-block;
+				padding: 4px;
+				border-radius: 50%;
+				position: relative;
+				left: 5px;
+				top: -8px;
+			}
+			.user-img-btn{
+				padding: 3px 10px;
+				vertical-align: bottom;
+				margin-left: 30px;
+			}
+		</style>
+	</head>
+	<body>
+		<%- include common/app_head2.html -%>
+		<div class="app-body" id="vm">
+			<div class="container page">
+				<div class="left">
+					<div class="left-item" :class="active_item=='基本资料'&&'active'" @click="changeTab" data-text="基本资料">基本资料</div>
+					<div class="left-item" :class="active_item=='消息通知'&&'active'" @click="changeTab" data-text="消息通知">消息通知<i class="news-icon"></i></div>
+					<div class="left-item" :class="active_item=='个人投稿'&&'active'" @click="changeTab" data-text="个人投稿">个人投稿</div>
+				</div>
+				<div class="right">
+					<h4>{{active_item}}</h4>
+					<div class="box box1" v-show="active_item=='基本资料'">
+						<user-info :user="user"></user-info>
+					</div>
+					<div class="box" v-show="active_item=='消息通知'">
+
+					</div>
+					<div class="box" v-show="active_item=='个人投稿'">
+						<user-article :user="user"></user-article>
+					</div>
+				</div>
+			</div>
+		</div>
+		<%- include common/app_footer.html -%>
+		<%- include user/userInfo.html -%>
+		<%- include user/userArticle.html -%>
+	</body>
+	<script>
+		window.vm = new Vue({
+			el : "#vm",
+			data:{
+				user: getStorage().user,
+				active_item: '基本资料'
+			},
+			created: function(){
+				this.getUserInfo()
+			},
+			methods:{
+				// 切换tab
+				changeTab: function(event){
+					this.active_item = event.target.getAttribute('data-text')
+				},
+				getUserInfo: function(){
+					var that = this
+					$._ajax({
+						type: "get",
+						url: "/user"
+					}).done(function(res){
+						that.user = res.data
+						setUserStorage(res.data)
+						// that.name = res.data.name
+					})
+				}
+			}
+		})
+	</script>
+</html>

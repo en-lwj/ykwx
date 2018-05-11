@@ -1,0 +1,292 @@
+<link rel="stylesheet" href="<%=Host%>/css/admin/article/checkCategoryArticle.css">
+<div id="temp">
+    <div style="padding:　10px">
+        <form class="form-inline">
+            <div class="form-group">
+                <label for="">活动年份</label>
+                <select class="form-control input-sm" style="min-width: 100px;" v-model="year">
+                    <option v-for="item in year_list" :key="item.year" :value="item.year">{{item.year}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="">活动名称</label>
+                <select class="form-control input-sm" style="min-width: 100px;" v-model="activity_id">
+                    <option v-for="item in year_activity" :key="item.id" :value="item.id">{{item.name}}</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <button class="btn btn-primary btn-sm" @click="getArticleList(1)">查询活动</button>
+            </div>
+        </form>
+    </div>
+    <div class="padding-top-sm center" v-show="article_list.length==0">
+        <span class="color-888">无待审核稿件...</span>
+    </div>
+    <div class="table-responsive" v-show="article_list.length!=0">
+        <table class="table table-bordered table-hover table-condensed">
+            <thead>
+                <tr>
+                    <td>id</td>
+                    <td>文章名称</td>
+                    <td>作者</td>
+                    <td>投稿类型</td>
+                    <td>投稿栏目</td>
+                    <td>评分</td>
+                    <td>投稿时间</td>
+                    <td>操作</td>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for='(item,index) in article_list' :key="item.id">
+                    <td>{{item.id}}</td>
+                    <td>{{item.name}}</td>
+                    <td>{{item.author}}</td>
+                    <td>活动</td>
+                    <td>{{item.activity_name != null? item.activity_name:item.category_name}}</td>
+                    <td>
+                        <span class="badge" :class="item.score==null? 'badge-warning': 'badge-success'">
+                        {{item.score==null? '未评分': item.score}}
+                        </span>
+                    </td>
+                    <td>{{item.create_time}}</td>
+                    <td style="white-space: nowrap;">                       
+                        <button class="btn btn-primary btn-xs" :disabled="item.is_recommend==1?'disabled':false" @click="showContentModal(index)">查看文章</button>
+                        <button class="btn btn-success btn-xs" :disabled="item.is_show==1?'disabled':false" @click="showSetScoreModal(index)">评分</button>
+                        <button class="btn btn-danger btn-xs" @click="showDelModal(index)">删除</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="page" v-show="article_list.length!=0" v-cloak>
+        <ul class="pagination">
+            <li :class="page<2?'disabled':''">
+                <a href="javascript:;" @click="getPage(page-1)"><i class="glyphicon glyphicon-backward"></i></a>
+            </li><li class="active">
+                <a href="javascript:;" @click="getPage(page)">{{page}}</a>
+            </li><li :class="page>=all_page?'disabled':''">
+                <a href="javascript:;"  @click="getPage(page+1)"><i class="glyphicon glyphicon-forward"></i></a>
+            </li><li class="page-input">跳转到<input type="number" v-model="go_page" @input="inputPage()"/>页
+            </li><li><button class="btn btn-primary" type="button" @click="getPage()">跳转</button></li>
+        </ul>
+    </div>
+
+    <!-- 推荐语模态框（Modal） -->
+    <div class="modal fade" id="contentModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">{{article_title}}</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="padding-top-sm center" v-show="content==''">
+                        <span class="color-888">加载...</span>
+                    </div>
+                    <div class="article-content" v-html="content">
+
+                    </div>
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 评分模态框（Modal） -->
+    <div class="modal fade" id="setScoreModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">评分</h4>
+                </div>
+                <div class="modal-body">
+                    <input class="form-control input-sm" type="number" value="0" v-model="score">
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="setScoreSure()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框（Modal） -->
+    <div class="modal fade" id="delModal" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <h4 class="modal-title">删除</h4>
+                </div>
+                <div class="modal-body">
+                    你确定删除吗？
+                </div>   
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" @click="delSure()">提交更改</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<script> 
+    var vm = new Vue({
+        el: '#temp',
+        data:　{
+            // 稿件列表
+            article_list: [],
+            select_index: null,
+            article_title:'',
+            content: '',
+            //根据年份获取的活动列表
+            year_activity: [],
+            activity_id: '',
+            // 当前活动的年份
+            year: '',
+            year_list: [],
+            // 当前页数
+            page: 1,
+            go_page: '',
+            all_page: 1,
+            // 评分
+            score: 0
+        },
+        created: function () {
+            this.getYearList()
+        },
+        methods: {
+            getArticleList: function(page){
+                var that = this
+                $._ajax({
+                    url: '/activity/article/processing/'+this.activity_id,
+                    data:{
+                        page: page,
+                        limit: 10
+                    }
+                }).done(function(res){
+                    that.article_list = res.data.data
+                    that.all_page = parseInt(res.data.all_page)
+                    that.page = parseInt(page)
+                })
+            },
+            // 获取年份列表
+            getYearList: function(){
+                var that = this
+                $._ajax({
+                    url: '/activity/year'
+                }).done(function(res){
+                    that.year_list = res.data
+                    that.year = res.data[0].year
+                    that.queryActivityByYear()
+                })
+            },
+            // 根据年份查询活动列表
+            queryActivityByYear: function(){
+                var that = this
+                $._ajax({
+                    url: '/activity/year/'+that.year
+                }).done(function(res){
+                    that.year_activity = res.data
+                    that.activity_id = res.data[0].id
+                    that.getArticleList(1)
+                })
+            },
+            getPage:function(page){
+                if(page!=undefined){
+                    if(page<=0) return
+                    if(page>this.all_page) return
+                }
+                else if(this.go_page==''){
+                    fixedMsg({type: 2, msg:'页数不能为空'})
+                    return
+                }
+                this.getArticleList(parseInt(page||this.go_page))
+            },
+            // 输入页数时
+            inputPage: function(){
+                var page = parseInt(this.go_page)
+                if(page>this.all_page) this.go_page = this.all_page
+                else if(page<1) this.go_page = 1
+            },
+            showDelModal: function(index){
+                this.select_index = index
+                $('#delModal').modal({
+                    backdrop: false
+                })
+            },
+            showSetScoreModal: function(index){
+                this.select_index = index
+                $('#setScoreModal').modal({
+                    backdrop: false
+                })
+            },
+            // 确认评分
+            setScoreSure: function(){
+                var that = this
+                var index = this.select_index
+                var score = Number(that.score)
+                if(isNaN(score)||0>score||100<score||String(score).split('.').length !=1){
+                    return fixedMsg({type: 2, msg:'请填写0~100整数'})
+                }
+                $._ajax({
+                    type: 'post',
+                    url: '/activity/score',
+                    data:{
+                        article_id: that.article_list[index].id,
+                        score: score
+                    }
+                }).done(function(res){
+                    if(res.status==200){
+                        that.article_list[index].score = score
+                        that.score = 0
+                        $('#setScoreModal').modal('hide')
+                        fixedMsg({type: 0, msg:'评分成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'评分失败'})
+                })
+            },
+            // 确认删除
+            delSure: function(){
+                var that = this
+                var index = this.select_index
+                $._ajax({
+                    type: 'delete',
+                    url: '/article/'+ this.article_list[index].id
+                }).done(function(res){
+                    if(res.status==200){
+                        that.article_list.splice(index,1)
+                        $('#delModal').modal('hide')
+                        fixedMsg({type: 0, msg:'删除成功'})
+                    }
+                    else fixedMsg({type: 1, msg:'删除失败'})
+                })
+            },
+            
+            showContentModal: function(index){
+                this.select_index = index
+                this.article_title = this.article_list[index].name
+                this.content = ''
+                var that = this
+                $('#contentModal').modal({
+                    backdrop: false
+                })
+                $._ajax({
+                    type: 'get',
+                    url: '/article/'+this.article_list[index].article_content_id+'/content'
+                }).done(function(res){
+                    if(res.status==200){
+                        that.content = res.data[0].content
+                        if(that.content=='') that.content = '内容为空'
+                    }
+                    else fixedMsg({type: 1, msg:'获取文章内容失败'})
+                })
+            }
+        }
+    })
+</script>
